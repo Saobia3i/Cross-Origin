@@ -122,7 +122,7 @@ export const Navbar: React.FC = () => {
           </Tooltip>
 
           {/* Admin link */}
-          {(user?.role === 'admin' || user?.role === 'superadmin') && (
+          {user?.role === 'admin' && (
             <Tooltip title={t('nav.admin')}>
               <IconButton component={Link} to="/admin" size="small">
                 <AdminPanelSettingsIcon fontSize="small" />

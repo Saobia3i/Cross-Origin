@@ -5,34 +5,36 @@ import {
 } from '@mui/material';
 import ThumbUp from '@mui/icons-material/ThumbUp';
 import ThumbDown from '@mui/icons-material/ThumbDown';
-import ChatBubbleOutlineOutlinedIcon from '@mui/icons-material/ChatBubbleOutlineOutlined';
 import { useTranslation } from 'react-i18next';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { fetchAlerts, voteAlert, retractVote } from '../../api/endpoints';
+import { fetchReports, voteReport, retractVote } from '../../api/endpoints';
+import apiClient from '../../api/client';
 import { StatusBadge } from '../../components/StatusBadge';
 import { EmptyState, ErrorBox } from '../../components/Feedback';
-import type { Alert } from '../../api/schemas';
+import type { Report } from '../../api/schemas';
 import { useAuthStore } from '../../store/auth';
 import { useNavigate } from 'react-router-dom';
 
 const SEVERITY_COLOR: Record<string, string> = {
-  low: '#94A3B8', medium: '#F59E0B', high: '#F97316', critical: '#E11D48',
+  light: '#94A3B8', moderate: '#F59E0B', heavy: '#E11D48',
 };
 
-const AlertCard: React.FC<{ alert: Alert }> = ({ alert }) => {
+const AlertCard: React.FC<{ alert: Report }> = ({ alert }) => {
   const { t } = useTranslation();
   const { user } = useAuthStore();
   const navigate = useNavigate();
   const qc = useQueryClient();
-  const [expanded, setExpanded] = useState(false);
+  const [voteError, setVoteError] = useState('');
 
   const voteMut = useMutation({
-    mutationFn: ({ v }: { v: 1 | -1 }) => voteAlert(alert.alert_id, v),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['alerts'] }),
+    mutationFn: ({ v }: { v: 1 | -1 }) => voteReport(alert.report_id, v),
+    onSuccess: () => { setVoteError(''); qc.invalidateQueries({ queryKey: ['alerts'] }); },
+    onError: (e: Error) => setVoteError(e.message),
   });
   const retractMut = useMutation({
-    mutationFn: () => retractVote(alert.alert_id),
+    mutationFn: () => retractVote(alert.report_id),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['alerts'] }),
+    onError: (e: Error) => setVoteError(e.message),
   });
 
   const handleVote = (v: 1 | -1) => {
@@ -57,7 +59,7 @@ const AlertCard: React.FC<{ alert: Alert }> = ({ alert }) => {
           <Box>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
               <StatusBadge status={alert.status} />
-              <Chip label={alert.affected_hub} size="small" variant="outlined" sx={{ height: 20, fontSize: '0.65rem' }} />
+              <Chip label={(alert.affected_hub ?? alert.report_type).replace(/_/g, ' ')} size="small" variant="outlined" sx={{ height: 20, fontSize: '0.65rem' }} />
               {alert.edge_closed && (
                 <Chip label="Road closed" size="small" sx={{ height: 20, fontSize: '0.65rem', backgroundColor: '#FFE4E6', color: '#E11D48' }} />
               )}
@@ -99,7 +101,7 @@ const AlertCard: React.FC<{ alert: Alert }> = ({ alert }) => {
         {alert.images.length > 0 && (
           <Box sx={{ display: 'flex', gap: 1, mb: 1.5, flexWrap: 'wrap' }}>
             {alert.images.slice(0, 3).map((img, i) => (
-              <Box key={i} component="img" src={img} alt={`Alert image ${i + 1}`}
+              <Box key={i} component="img" src={img.url.startsWith('http') ? img.url : apiClient.defaults.baseURL + img.url} alt={`Alert image ${i + 1}`}
                 sx={{ width: 72, height: 56, objectFit: 'cover', borderRadius: 1, border: '1px solid', borderColor: 'divider' }}
               />
             ))}
@@ -137,14 +139,8 @@ const AlertCard: React.FC<{ alert: Alert }> = ({ alert }) => {
           >
             {alert.downvotes}
           </Button>
-          <Button
-            size="small" startIcon={<ChatBubbleOutlineOutlinedIcon sx={{ fontSize: '14px !important' }} />}
-            onClick={() => setExpanded(!expanded)}
-            sx={{ color: 'text.secondary', minWidth: 0, px: 1, '&:hover': { color: 'text.primary' } }}
-          >
-            {alert.comments_count}
-          </Button>
         </Box>
+        {voteError && <Typography variant="caption" color="error.main">{voteError}</Typography>}
       </Box>
     </Paper>
   );
@@ -156,11 +152,11 @@ const AlertsFeed: React.FC = () => {
 
   const { data, isLoading, error, refetch } = useQuery({
     queryKey: ['alerts'],
-    queryFn: fetchAlerts,
+    queryFn: () => fetchReports({ limit: 100 }),
     refetchInterval: 12_000, // poll every 12s
   });
 
-  const alerts = (data as Alert[] | undefined) ?? [];
+  const alerts = data ?? [];
   const filtered = statusFilter === 'all' ? alerts : alerts.filter(a => a.status === statusFilter);
 
   return (
@@ -185,7 +181,7 @@ const AlertsFeed: React.FC = () => {
 
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
         {filtered.map((alert) => (
-          <AlertCard key={alert.alert_id} alert={alert} />
+          <AlertCard key={alert.report_id} alert={alert} />
         ))}
       </Box>
     </Box>

@@ -10,29 +10,24 @@ import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useTranslation } from 'react-i18next';
-import { createReport } from '../../api/endpoints';
+import { createReport, fetchNetwork } from '../../api/endpoints';
+import { useQuery } from '@tanstack/react-query';
 import { useAuthStore } from '../../store/auth';
 import { useNavigate } from 'react-router-dom';
 
 const schema = z.object({
   hub:         z.string().min(1, 'Hub is required'),
   type:        z.string().min(1, 'Type is required'),
-  severity:    z.enum(['low', 'medium', 'high', 'critical']),
+  severity:    z.enum(['light', 'moderate', 'heavy']),
   description: z.string().min(10, 'At least 10 characters'),
   incident_time: z.string().min(1, 'Incident time required'),
 });
 
 type FormData = z.infer<typeof schema>;
 
-const HUBS = [
-  'Motijheel', 'Banasree', 'Malibagh', 'Shahbagh', 'Farmgate',
-  'Science Lab', 'Dhanmondi', 'Mohammadpur', 'Mirpur 10', 'Agargaon',
-  'Mohakhali', 'Badda', 'Uttara', 'Jatrabari', 'Kazipara',
-];
-
 const ALERT_TYPES = [
-  'Waterlogging', 'Gridlock', 'Road closure', 'Construction',
-  'Accident', 'Public event', 'Other',
+  'waterlogging', 'road_construction', 'severe_gridlock', 'intersection_blockade',
+  'fare_surge', 'accident', 'all_clear', 'other',
 ];
 
 const ReportForm: React.FC = () => {
@@ -43,10 +38,13 @@ const ReportForm: React.FC = () => {
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
+  const [error, setError] = useState('');
+  const { data: network } = useQuery({ queryKey: ['network'], queryFn: fetchNetwork });
+  const HUBS = network?.hubs ?? [];
 
   const { control, handleSubmit, formState: { errors } } = useForm<FormData>({
     resolver: zodResolver(schema),
-    defaultValues: { severity: 'medium', incident_time: new Date().toISOString().slice(0, 16) },
+    defaultValues: { severity: 'moderate', incident_time: new Date().toISOString().slice(0, 16) },
   });
 
   if (!user) {
@@ -58,17 +56,21 @@ const ReportForm: React.FC = () => {
     );
   }
 
+  // Photos are optional on the backend (max 5, JPEG/PNG/WebP, 5 MB each).
   const onSubmit = async (data: FormData) => {
-    if (images.length === 0) { alert('At least 1 image required'); return; }
     setSubmitting(true);
+    setError('');
     try {
-      const form = new FormData();
-      Object.entries(data).forEach(([k, v]) => form.append(k, v as string));
-      images.forEach(img => form.append('images', img));
-      await createReport(form);
+      await createReport({
+        report_type: data.type,
+        severity: data.severity,
+        affected_hub: data.hub,
+        description: data.description,
+        incident_time: new Date(data.incident_time).toISOString(),
+      }, images);
       setSuccess(true);
     } catch (e) {
-      console.error(e);
+      setError((e as Error).message);
     } finally {
       setSubmitting(false);
     }
@@ -84,7 +86,7 @@ const ReportForm: React.FC = () => {
     <Paper elevation={0} sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 2, p: 4, textAlign: 'center' }}>
       <Typography sx={{ fontSize: 48, mb: 2 }}>✅</Typography>
       <Typography variant="h6" gutterBottom>Report submitted!</Typography>
-      <Typography variant="body2" color="text.secondary" gutterBottom>It will be verified by the community and admins.</Typography>
+      <Typography variant="body2" color="text.secondary" gutterBottom>It is pending: an admin must verify it before it affects routing.</Typography>
       <Button variant="contained" sx={{ mt: 2 }} onClick={() => { setSuccess(false); navigate('/alerts'); }}>
         View alerts
       </Button>
@@ -100,19 +102,19 @@ const ReportForm: React.FC = () => {
       <Box component="form" onSubmit={handleSubmit(onSubmit)} sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
         <Controller name="hub" control={control} render={({ field }) => (
           <TextField {...field} select label="Hub / Location" size="small" error={!!errors.hub} helperText={errors.hub?.message}>
-            {HUBS.map(h => <MenuItem key={h} value={h}>{h}</MenuItem>)}
+            {HUBS.map(h => <MenuItem key={h.hub_id} value={h.hub_id}>{h.name}</MenuItem>)}
           </TextField>
         )} />
 
         <Box sx={{ display: 'flex', gap: 1.5 }}>
           <Controller name="type" control={control} render={({ field }) => (
             <TextField {...field} select label="Type" size="small" error={!!errors.type} helperText={errors.type?.message} sx={{ flex: 1 }}>
-              {ALERT_TYPES.map(a => <MenuItem key={a} value={a}>{a}</MenuItem>)}
+              {ALERT_TYPES.map(a => <MenuItem key={a} value={a}>{a.replace(/_/g, ' ')}</MenuItem>)}
             </TextField>
           )} />
           <Controller name="severity" control={control} render={({ field }) => (
             <TextField {...field} select label="Severity" size="small" sx={{ flex: 1 }}>
-              {['low', 'medium', 'high', 'critical'].map(s => <MenuItem key={s} value={s} sx={{ textTransform: 'capitalize' }}>{s}</MenuItem>)}
+              {['light', 'moderate', 'heavy'].map(s => <MenuItem key={s} value={s} sx={{ textTransform: 'capitalize' }}>{s}</MenuItem>)}
             </TextField>
           )} />
         </Box>
@@ -134,7 +136,7 @@ const ReportForm: React.FC = () => {
         {/* Image upload */}
         <Box>
           <Typography variant="caption" color="text.secondary" sx={{ mb: 1, display: 'block' }}>
-            Photos (1–5, max 5MB each) *
+            Photos (optional, up to 5, max 5MB each)
           </Typography>
           <Box
             onClick={() => fileRef.current?.click()}
@@ -170,6 +172,7 @@ const ReportForm: React.FC = () => {
           )}
         </Box>
 
+        {error && <Typography color="error.main" variant="caption">{error}</Typography>}
         <Button type="submit" variant="contained" color="error" disabled={submitting} sx={{ height: 44 }}>
           {submitting ? 'Submitting…' : t('alert.report')}
         </Button>

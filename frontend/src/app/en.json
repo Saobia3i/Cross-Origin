@@ -72,6 +72,7 @@
   },
   "mode": {
     "bus":      "Bus",
+    "local_bus": "Local bus",
     "mrt":      "MRT",
     "rickshaw": "Rickshaw",
     "leguna":   "Leguna",

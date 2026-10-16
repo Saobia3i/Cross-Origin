@@ -9,7 +9,6 @@ import { z } from 'zod';
 import { useTranslation } from 'react-i18next';
 import { login, register } from '../api/endpoints';
 import { useAuthStore } from '../store/auth';
-import type { UserType } from '../api/schemas';
 
 const loginSchema = z.object({
   email:    z.string().email(),
@@ -35,8 +34,8 @@ export const LoginPage: React.FC = () => {
   const onSubmit = async (data: LoginForm) => {
     setError('');
     try {
-      const res = await login(data.email, data.password) as any;
-      setAuth(res.user, res.token);
+      const res = await login(data.email, data.password);
+      setAuth(res.user, res.access_token);
       navigate('/');
     } catch (e) {
       setError((e as Error).message);
@@ -93,8 +92,8 @@ export const RegisterPage: React.FC = () => {
   const onSubmit = async (data: RegisterForm) => {
     setError('');
     try {
-      const res = await register(data.name, data.email, data.password, data.phone) as any;
-      setAuth(res.user, res.token);
+      const res = await register(data.name, data.email, data.password);
+      setAuth(res.user, res.access_token);
       navigate('/');
     } catch (e) {
       setError((e as Error).message);

@@ -10,54 +10,53 @@ import RefreshIcon from '@mui/icons-material/Refresh';
 import { useTranslation } from 'react-i18next';
 import { runSimulation, resetSimulation } from '../../api/endpoints';
 import { FareText } from '../../components/FareText';
-
-const HUBS = [
-  'Motijheel', 'Banasree', 'Malibagh', 'Shahbagh', 'Farmgate',
-  'Science Lab', 'Dhanmondi', 'Mohammadpur', 'Mirpur 10', 'Agargaon',
-];
-
-interface SimResult {
-  affected: string[];
-  before: { fare: number; duration: number };
-  after:  { fare: number; duration: number };
-  detour: string;
-}
+import { fetchNetwork } from '../../api/endpoints';
+import { useQuery } from '@tanstack/react-query';
+import { useTripStore } from '../../store/trip';
+import type { ScenarioType, SimulationResult } from '../../api/schemas';
 
 const SimulatorPanel: React.FC = () => {
   const { t } = useTranslation();
-  const [selected, setSelected] = useState<'heavy_rain' | 'rush_hour' | 'block_intersection' | null>(null);
-  const [zone, setZone]         = useState('Shahbagh');
-  const [result, setResult]     = useState<SimResult | null>(null);
+  const [selected, setSelected] = useState<ScenarioType | null>(null);
+  const [zone, setZone]         = useState('');
+  const [result, setResult]     = useState<SimulationResult | null>(null);
   const [loading, setLoading]   = useState(false);
+  const [error, setError]       = useState('');
+  const { origin, destination, studentMode } = useTripStore();
+  const { data: network } = useQuery({ queryKey: ['network'], queryFn: fetchNetwork });
+  const HUBS = (network?.hubs ?? []).map((h) => h.name);
 
   const SCENARIOS = [
-    { key: 'heavy_rain',        label: t('sim.heavyRain'),         Icon: ThunderstormIcon, color: '#2563EB' },
-    { key: 'rush_hour',         label: t('sim.rushHour'),          Icon: DirectionsCarIcon, color: '#F59E0B' },
-    { key: 'block_intersection',label: t('sim.blockIntersection'), Icon: BlockIcon,        color: '#E11D48' },
+    { key: 'heavy_rain',           label: t('sim.heavyRain'),         Icon: ThunderstormIcon, color: '#2563EB' },
+    { key: 'peak_rush_hour',       label: t('sim.rushHour'),          Icon: DirectionsCarIcon, color: '#F59E0B' },
+    { key: 'blocked_intersection', label: t('sim.blockIntersection'), Icon: BlockIcon,        color: '#E11D48' },
   ] as const;
 
+  // Simulations are per session and need a verified login (backend: verified_user).
   const handleRun = async () => {
     if (!selected) return;
     setLoading(true);
+    setError('');
     try {
-      const res = await runSimulation(selected, zone);
-      setResult(res as SimResult);
-    } catch {
-      // Use mock result for demo
-      setResult({
-        affected: ['Farmgate–Shahbagh', 'Shahbagh–Motijheel'],
-        before:   { fare: 120, duration: 35 },
-        after:    { fare: 180, duration: 60 },
-        detour:   'Via Science Lab → Motijheel (Bus R7)',
+      const res = await runSimulation(selected, {
+        zone_hub: zone || undefined,
+        origin: origin || undefined,
+        destination: destination || undefined,
+        prefer_student_fare: studentMode,
       });
+      setResult(res);
+    } catch (e) {
+      setResult(null);
+      setError((e as Error).message);
     } finally {
       setLoading(false);
     }
   };
 
   const handleReset = async () => {
-    try { await resetSimulation(); } catch {}
+    try { await resetSimulation(); } catch { /* nothing active */ }
     setResult(null);
+    setError('');
     setSelected(null);
   };
 
@@ -110,42 +109,52 @@ const SimulatorPanel: React.FC = () => {
         </Button>
       </Box>
 
-      {/* Results */}
-      {result && (
-        <Box>
-          {/* Affected segments */}
-          <Typography variant="subtitle2" fontWeight={700} sx={{ fontFamily: 'var(--font-heading)', mb: 1 }}>
-            {t('sim.affected')}
-          </Typography>
-          <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', mb: 2.5 }}>
-            {result.affected.map((seg, i) => (
-              <Chip key={i} label={seg} size="small" sx={{ backgroundColor: '#FFE4E6', color: '#E11D48', fontWeight: 500 }} />
-            ))}
-          </Box>
+      {error && <Typography color="error.main" variant="caption" sx={{ display: 'block', mb: 2 }}>{error}</Typography>}
 
-          {/* Before / After */}
-          <Box sx={{ display: 'flex', gap: 1.5, mb: 2.5 }}>
-            {[
-              { label: t('sim.before'), data: result.before, color: '#16A34A', bg: '#DCFCE7' },
-              { label: t('sim.after'),  data: result.after,  color: '#E11D48', bg: '#FFE4E6' },
-            ].map(({ label, data, color, bg }) => (
-              <Paper key={label} elevation={0} sx={{ flex: 1, p: 2, border: '1px solid', borderColor: 'divider', borderRadius: 2, backgroundColor: bg }}>
-                <Typography variant="caption" fontWeight={700} sx={{ color, display: 'block', mb: 1 }}>{label}</Typography>
-                <FareText amount={data.fare} size="lg" sx={{ color, display: 'block', mb: 0.5 }} />
-                <Typography variant="body2" sx={{ fontFamily: 'var(--font-mono)', color }}>
-                  {data.duration} min
+      {/* Results (from before_after_comparison) */}
+      {result && (() => {
+        const c = result.before_after_comparison;
+        return (
+          <Box>
+            {result.broken_segments.length > 0 && (
+              <>
+                <Typography variant="subtitle2" fontWeight={700} sx={{ fontFamily: 'var(--font-heading)', mb: 1 }}>
+                  {t('sim.affected')}
                 </Typography>
-              </Paper>
-            ))}
+                <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', mb: 2.5 }}>
+                  {result.broken_segments.map((seg, i) => (
+                    <Chip key={i} label={typeof seg === 'string' ? seg : JSON.stringify(seg)} size="small" sx={{ backgroundColor: '#FFE4E6', color: '#E11D48', fontWeight: 500 }} />
+                  ))}
+                </Box>
+              </>
+            )}
+            {c.available ? (
+              <Box sx={{ display: 'flex', gap: 1.5, mb: 2.5 }}>
+                {[
+                  { label: t('sim.before'), min: c.original_fare_min, max: c.original_fare_max, dur: c.original_duration_min, color: '#16A34A', bg: '#DCFCE7' },
+                  { label: t('sim.after'),  min: c.new_fare_min,      max: c.new_fare_max,      dur: c.new_duration_min,      color: '#E11D48', bg: '#FFE4E6' },
+                ].map(({ label, min, max, dur, color, bg }) => (
+                  <Paper key={label} elevation={0} sx={{ flex: 1, p: 2, border: '1px solid', borderColor: 'divider', borderRadius: 2, backgroundColor: bg }}>
+                    <Typography variant="caption" fontWeight={700} sx={{ color, display: 'block', mb: 1 }}>{label}</Typography>
+                    <FareText min={min} max={max} size="lg" sx={{ color, display: 'block', mb: 0.5 }} />
+                    <Typography variant="body2" sx={{ fontFamily: 'var(--font-mono)', color }}>{dur} min</Typography>
+                  </Paper>
+                ))}
+              </Box>
+            ) : (
+              <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                Search a trip first to compare before/after for your journey.
+              </Typography>
+            )}
+            <Paper elevation={0} sx={{ p: 2, border: '1px solid', borderColor: 'divider', borderRadius: 2, backgroundColor: 'background.default' }}>
+              <Typography variant="caption" fontWeight={700} color="primary.main">{t('sim.detour')}</Typography>
+              <Typography variant="body2" sx={{ mt: 0.5 }}>
+                {c.rerouted ? 'Rerouted' : 'No reroute needed'}{c.note ? ' - ' + c.note : ''}
+              </Typography>
+            </Paper>
           </Box>
-
-          {/* Detour */}
-          <Paper elevation={0} sx={{ p: 2, border: '1px solid', borderColor: 'divider', borderRadius: 2, backgroundColor: 'background.default' }}>
-            <Typography variant="caption" fontWeight={700} color="primary.main">{t('sim.detour')}</Typography>
-            <Typography variant="body2" sx={{ mt: 0.5 }}>{result.detour}</Typography>
-          </Paper>
-        </Box>
-      )}
+        );
+      })()}
     </Box>
   );
 };

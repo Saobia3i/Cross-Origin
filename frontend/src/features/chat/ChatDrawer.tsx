@@ -9,13 +9,25 @@ import ShieldIcon from '@mui/icons-material/Shield';
 import { useTranslation } from 'react-i18next';
 import { useChatStore } from '../../store/chat';
 import { useUIStore } from '../../store/ui';
-import { sendChat } from '../../api/endpoints';
+import { sendChat, submitDraft, cancelDraft } from '../../api/endpoints';
+import { useTripStore } from '../../store/trip';
 import { GroundingBadge } from '../../components/Feedback';
 import type { ChatMessage } from '../../store/chat';
 
 const MessageBubble: React.FC<{ msg: ChatMessage }> = ({ msg }) => {
   const { t } = useTranslation();
   const isUser = msg.role === 'user';
+  const [draftState, setDraftState] = useState<string>('open');
+
+  // Draft -> pending only after the user confirms (POST /api/reports/drafts/{id}/submit).
+  const onConfirm = async () => {
+    try { await submitDraft(msg.draftId!); setDraftState('sent'); }
+    catch (e) { setDraftState((e as Error).message); }
+  };
+  const onCancel = async () => {
+    try { await cancelDraft(msg.draftId!); } catch { /* ignore */ }
+    setDraftState('cancelled');
+  };
 
   return (
     <Box sx={{ display: 'flex', justifyContent: isUser ? 'flex-end' : 'flex-start', mb: 1.5 }}>
@@ -36,12 +48,17 @@ const MessageBubble: React.FC<{ msg: ChatMessage }> = ({ msg }) => {
             <GroundingBadge ok={msg.grounded!} />
           </Box>
         )}
-        {!isUser && msg.draft && (
+        {!isUser && msg.draft && msg.draftId && draftState !== 'open' && (
+          <Typography variant="caption" color="text.secondary">
+            {draftState === 'sent' ? 'Submitted for admin verification.' : draftState === 'cancelled' ? 'Draft discarded.' : draftState}
+          </Typography>
+        )}
+        {!isUser && msg.draft && msg.draftId && draftState === 'open' && (
           <Box sx={{ mt: 1, display: 'flex', gap: 1 }}>
-            <Button size="small" variant="contained" color="error" sx={{ height: 28, fontSize: '0.75rem' }}>
+            <Button size="small" variant="contained" color="error" onClick={onConfirm} sx={{ height: 28, fontSize: '0.75rem' }}>
               {t('chat.confirm')}
             </Button>
-            <Button size="small" variant="outlined" sx={{ height: 28, fontSize: '0.75rem' }}>
+            <Button size="small" variant="outlined" onClick={onCancel} sx={{ height: 28, fontSize: '0.75rem' }}>
               {t('chat.notNow')}
             </Button>
           </Box>
@@ -54,7 +71,8 @@ const MessageBubble: React.FC<{ msg: ChatMessage }> = ({ msg }) => {
 const ChatPanel: React.FC = () => {
   const { t } = useTranslation();
   const { lang } = useUIStore();
-  const { sessionId, messages, isThinking, setSessionId, addMessage, setThinking } = useChatStore();
+  const { messages, isThinking, addMessage, setThinking } = useChatStore();
+  const setResults = useTripStore((s) => s.setResults);
   const [input, setInput] = useState('');
   const bottomRef = useRef<HTMLDivElement>(null);
 
@@ -69,14 +87,19 @@ const ChatPanel: React.FC = () => {
     addMessage({ id: crypto.randomUUID(), role: 'user', text, createdAt: new Date().toISOString() });
     setThinking(true);
     try {
-      const res = await sendChat(sessionId, text, lang as 'en' | 'bn');
-      if (!sessionId) setSessionId(res.session_id);
+      const res = await sendChat(text, lang as 'en' | 'bn');
+      const sp = res.structured_payload ?? {};
+      const draft = sp.draft_report as { draft_id?: string } | undefined;
+      // Route options come from the backend engine (already grounded); surface them in the trip panel.
+      if (Array.isArray(sp.routes) && sp.routes.length) setResults(sp.routes);
       addMessage({
         id:        crypto.randomUUID(),
         role:      'assistant',
-        text:      res.reply,
-        grounded:  res.grounded,
-        payload:   res.payload,
+        text:      res.reply_text,
+        grounded:  res.grounding?.valid ?? false,
+        payload:   sp,
+        draft:     !!draft?.draft_id && sp.confirmation_required === true,
+        draftId:   draft?.draft_id,
         createdAt: new Date().toISOString(),
       });
     } catch (e) {

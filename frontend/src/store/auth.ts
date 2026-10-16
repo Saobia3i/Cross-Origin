@@ -5,8 +5,8 @@ export interface User {
   id: number;
   name: string;
   email: string;
-  role: 'user' | 'admin' | 'superadmin';
-  phone?: string;
+  role: 'user' | 'admin';
+  is_verified?: boolean;
 }
 
 interface AuthState {
@@ -26,7 +26,7 @@ export const useAuthStore = create<AuthState>()(
       clearAuth: () => set({ user: null, token: null }),
       isAdmin: () => {
         const role = get().user?.role;
-        return role === 'admin' || role === 'superadmin';
+        return role === 'admin';
       },
     }),
     { name: 'dhaka_auth' }

@@ -1,27 +1,7 @@
 import { create } from 'zustand';
+import type { RouteOption } from '../api/schemas';
 
-export interface RouteLeg {
-  mode:        'bus' | 'mrt' | 'rickshaw' | 'leguna' | 'cng' | 'walk';
-  from:        string;
-  to:          string;
-  fare:        number;
-  studentFare?: number;
-  durationMin: number;
-  boarding?:   string;
-  alighting?:  string;
-  routeId?:    string;
-}
-
-export interface RouteOption {
-  id:            string;
-  legs:          RouteLeg[];
-  totalFare:     number;
-  totalDuration: number;
-  transfers:     number;
-  withinBudget:  boolean;
-  disrupted:     boolean;
-  groundingOk:   boolean;
-}
+export type SortBy = 'cheapest' | 'fastest' | 'fewest_transfers';
 
 interface TripState {
   origin:          string;
@@ -31,11 +11,11 @@ interface TripState {
   avoidHubs:       string[];
   results:         RouteOption[];
   selectedRoute:   RouteOption | null;
-  sortBy:          'cheapest' | 'fastest' | 'fewest';
+  sortBy:          SortBy;
   setSearch: (params: Partial<Pick<TripState, 'origin' | 'destination' | 'budget' | 'studentMode' | 'avoidHubs'>>) => void;
   setResults: (results: RouteOption[]) => void;
   selectRoute: (route: RouteOption | null) => void;
-  setSortBy: (sort: TripState['sortBy']) => void;
+  setSortBy: (sort: SortBy) => void;
   clearResults: () => void;
 }
 
@@ -49,7 +29,7 @@ export const useTripStore = create<TripState>()((set) => ({
   selectedRoute: null,
   sortBy:        'cheapest',
   setSearch: (params) => set(params),
-  setResults: (results) => set({ results }),
+  setResults: (results) => set({ results, selectedRoute: results[0] ?? null }),
   selectRoute: (route) => set({ selectedRoute: route }),
   setSortBy: (sortBy) => set({ sortBy }),
   clearResults: () => set({ results: [], selectedRoute: null }),

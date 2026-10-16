@@ -1,7 +1,31 @@
-import axios from 'axios';
+import axios, { AxiosError } from 'axios';
 import { useAuthStore } from '../store/auth';
 
-const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+// VITE_API_URL is the legacy name, kept as a fallback.
+const BASE_URL =
+  import.meta.env.VITE_API_BASE_URL || import.meta.env.VITE_API_URL || 'http://localhost:8000';
+
+export interface ApiErrorItem {
+  code: string;
+  message: string;
+  field?: string | null;
+  details?: unknown;
+}
+
+/** Thrown for every failed call; carries the backend `errors[]` when there was an envelope. */
+export class ApiError extends Error {
+  status?: number;
+  errors: ApiErrorItem[];
+  constructor(message: string, errors: ApiErrorItem[] = [], status?: number) {
+    super(message);
+    this.name = 'ApiError';
+    this.errors = errors;
+    this.status = status;
+  }
+  get code() {
+    return this.errors[0]?.code;
+  }
+}
 
 export const apiClient = axios.create({
   baseURL: BASE_URL,
@@ -9,33 +33,30 @@ export const apiClient = axios.create({
   timeout: 15_000,
 });
 
-// Attach JWT token on every request
 apiClient.interceptors.request.use((config) => {
   const token = useAuthStore.getState().token;
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
+  if (token) config.headers.Authorization = `Bearer ${token}`;
   return config;
 });
 
-// Unwrap envelope  { ok, data, meta, errors }
+// Envelope: { ok, data, meta, errors }. Callers receive `res.data` === envelope.data.
 apiClient.interceptors.response.use(
   (res) => {
-    if (res.data?.ok === false) {
-      return Promise.reject(new Error(res.data.errors?.[0]?.message || 'API error'));
+    const env = res.data;
+    if (env && typeof env === 'object' && 'ok' in env) {
+      if (env.ok === false) {
+        const errors: ApiErrorItem[] = env.errors ?? [];
+        return Promise.reject(new ApiError(errors[0]?.message || 'API error', errors, res.status));
+      }
+      res.data = env.data;
     }
-    // return the inner data directly so callers get res.data directly
-    res.data = res.data?.data ?? res.data;
     return res;
   },
-  (err) => {
-    const msg =
-      err.response?.data?.errors?.[0]?.message ||
-      err.response?.data?.message ||
-      err.message ||
-      'Network error';
-    return Promise.reject(new Error(msg));
-  }
+  (err: AxiosError<{ errors?: ApiErrorItem[] }>) => {
+    const errors = err.response?.data?.errors ?? [];
+    const msg = errors[0]?.message || err.message || 'Network error';
+    return Promise.reject(new ApiError(msg, errors, err.response?.status));
+  },
 );
 
 export default apiClient;
