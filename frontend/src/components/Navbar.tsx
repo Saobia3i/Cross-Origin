@@ -12,6 +12,7 @@ import DarkModeIcon from '@mui/icons-material/DarkMode';
 import LightModeIcon from '@mui/icons-material/LightMode';
 import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings';
 import { useTranslation } from 'react-i18next';
+import { useQueryClient } from '@tanstack/react-query';
 import { useUIStore } from '../store/ui';
 import { useAuthStore } from '../store/auth';
 import { useChatStore } from '../store/chat';
@@ -30,8 +31,12 @@ export const Navbar: React.FC = () => {
   const { toggleChat } = useChatStore();
   const location      = useLocation();
   const navigate      = useNavigate();
+  const qc            = useQueryClient();
 
   const isDark = theme === 'dark';
+  const navItems = user?.role === 'admin'
+    ? [...NAV, { key: 'admin', path: '/admin', Icon: AdminPanelSettingsIcon }]
+    : NAV;
 
   return (
     <AppBar
@@ -61,7 +66,7 @@ export const Navbar: React.FC = () => {
 
         {/* Desktop Nav */}
         <Box sx={{ display: { xs: 'none', md: 'flex' }, alignItems: 'center', gap: 0.5, flex: 1 }}>
-          {NAV.map(({ key, path, Icon }) => {
+          {navItems.map(({ key, path, Icon }) => {
             const active = location.pathname === path;
             return (
               <Button
@@ -121,13 +126,11 @@ export const Navbar: React.FC = () => {
             </IconButton>
           </Tooltip>
 
-          {/* Admin link */}
-          {user?.role === 'admin' && (
-            <Tooltip title={t('nav.admin')}>
-              <IconButton component={Link} to="/admin" size="small">
-                <AdminPanelSettingsIcon fontSize="small" />
-              </IconButton>
-            </Tooltip>
+          {/* Signed-in user */}
+          {user && (
+            <Typography variant="caption" sx={{ color: '#D4D0C8', display: { xs: 'none', sm: 'block' }, mx: 0.5 }}>
+              {user.name}{user.role === 'admin' ? ' (admin)' : ''}
+            </Typography>
           )}
 
           {/* Auth */}
@@ -135,7 +138,7 @@ export const Navbar: React.FC = () => {
             <Button
               size="small"
               variant="outlined"
-              onClick={() => { clearAuth(); navigate('/'); }}
+              onClick={() => { clearAuth(); qc.invalidateQueries(); navigate('/'); }}
               sx={{ ml: 0.5 }}
             >
               {t('auth.logout')}

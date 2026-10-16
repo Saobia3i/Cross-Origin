@@ -7,6 +7,8 @@ import { I18nextProvider } from 'react-i18next';
 import i18n from './i18n';
 import { lightTheme, darkTheme } from './theme';
 import { useUIStore } from '../store/ui';
+import { useAuthStore } from '../store/auth';
+import { getMe } from '../api/endpoints';
 import Layout from '../components/Layout';
 import { useEventPolling } from '../hooks/useEventPolling';
 
@@ -36,6 +38,15 @@ const AppInner: React.FC = () => {
   const { theme } = useUIStore();
   const muiTheme  = theme === 'dark' ? darkTheme : lightTheme;
   useEventPolling();
+
+  // Re-validate a persisted login on startup; role/verification always come from the backend.
+  const token = useAuthStore((s) => s.token);
+  useEffect(() => {
+    if (!token) return;
+    getMe()
+      .then((me) => useAuthStore.getState().setAuth(me, token))
+      .catch(() => { /* invalid tokens are cleared by the API client */ });
+  }, [token]);
 
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme);

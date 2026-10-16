@@ -5,6 +5,8 @@ import NotificationsNoneIcon from '@mui/icons-material/NotificationsNone';
 import SearchIcon from '@mui/icons-material/Search';
 import ChatIcon from '@mui/icons-material/Chat';
 import GridViewIcon from '@mui/icons-material/GridView';
+import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings';
+import { useAuthStore } from '../store/auth';
 import { Link, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Navbar } from './Navbar';
@@ -27,7 +29,11 @@ export const Layout: React.FC<Props> = ({ children }) => {
   const location      = useLocation();
   const { t }         = useTranslation();
   const { toggleChat } = useChatStore();
-  const activeIdx = BOTTOM_TABS.findIndex(t => t.path && location.pathname === t.path);
+  const isAdmin = useAuthStore((s) => s.user?.role === 'admin');
+  const tabs = isAdmin
+    ? [...BOTTOM_TABS.slice(0, 4), { key: 'admin', path: '/admin', Icon: AdminPanelSettingsIcon }, BOTTOM_TABS[4]]
+    : BOTTOM_TABS;
+  const activeIdx = tabs.findIndex(t => t.path && location.pathname === t.path);
 
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
@@ -64,7 +70,7 @@ export const Layout: React.FC<Props> = ({ children }) => {
           value={activeIdx}
           sx={{ height: 60, backgroundColor: 'background.paper' }}
         >
-          {BOTTOM_TABS.map(({ key, path, Icon }) => (
+          {tabs.map(({ key, path, Icon }) => (
             <BottomNavigationAction
               key={key}
               label={t(`nav.${key}`)}

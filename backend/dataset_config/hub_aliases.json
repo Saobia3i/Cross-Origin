@@ -1,13 +1,55 @@
 {
   "_doc": "Hub alias rules. Formatting-only variants (case/spacing/punctuation, e.g. 'Farm Gate' vs 'Farmgate', 'Mirpur10' vs 'Mirpur 10') are merged automatically. Any OTHER spelling is merged only when listed here. Spelling proposals are written to data/generated/normalization_report.json -> hub_alias.proposed_aliases; review them and copy accepted ones into approved_aliases (or into rejected_aliases to silence them).",
   "required_aliases": [
-    {"alias": "Uttara", "canonical": "Uttara North", "source": "problem_owner_brief"},
-    {"alias": "Mirpur", "canonical": "Mirpur 10", "source": "problem_owner_brief"}
+    {
+      "alias": "Uttara",
+      "canonical": "Uttara North",
+      "source": "problem_owner_brief"
+    },
+    {
+      "alias": "Mirpur",
+      "canonical": "Mirpur 10",
+      "source": "problem_owner_brief"
+    }
   ],
-  "approved_aliases": [],
+  "approved_aliases": [
+    {
+      "alias": "Shahbag",
+      "canonical": "Shahbagh",
+      "evidence": "same place; one-letter spelling variant (fare sheet vs route map)"
+    },
+    {
+      "alias": "Firmgate",
+      "canonical": "Farmgate",
+      "evidence": "MRT route map spelling of the Farmgate station"
+    },
+    {
+      "alias": "Matijhil",
+      "canonical": "Motijheel",
+      "evidence": "terminal station of the MRT-6 route map; spelling variant of Motijheel"
+    },
+    {
+      "alias": "Sonarga hotel",
+      "canonical": "Sonargaon Hotel",
+      "evidence": "co-ordination/Routemap-DhakaMetroRail.csv rows 10/11 end at the same point"
+    },
+    {
+      "alias": "DU",
+      "canonical": "Dhaka Univ.",
+      "evidence": "University of Dhaka (DU) station in the route map; fare sheet writes Dhaka Univ."
+    }
+  ],
   "rejected_aliases": [],
   "preferred_display_names": [
-    "Uttara North", "Pallabi", "Mirpur 11", "Mirpur 10", "Kazipara",
-    "Agargaon", "Farmgate", "Shahbagh", "Dhaka Univ.", "Motijheel"
+    "Uttara North",
+    "Pallabi",
+    "Mirpur 11",
+    "Mirpur 10",
+    "Kazipara",
+    "Agargaon",
+    "Farmgate",
+    "Shahbagh",
+    "Dhaka Univ.",
+    "Motijheel"
   ]
 }

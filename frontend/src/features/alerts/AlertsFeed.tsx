@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import {
-  Box, Typography, Paper, Chip, Button, TextField, Divider,
-  LinearProgress, Avatar, IconButton,
+  Box, Typography, Paper, Chip, Button, LinearProgress,
 } from '@mui/material';
 import ThumbUp from '@mui/icons-material/ThumbUp';
 import ThumbDown from '@mui/icons-material/ThumbDown';
@@ -64,7 +63,7 @@ const AlertCard: React.FC<{ alert: Report }> = ({ alert }) => {
                 <Chip label="Road closed" size="small" sx={{ height: 20, fontSize: '0.65rem', backgroundColor: '#FFE4E6', color: '#E11D48' }} />
               )}
             </Box>
-            <Typography variant="body2" fontWeight={500} sx={{ lineHeight: 1.4 }}>
+            <Typography variant="body2" sx={{ fontWeight: 500, lineHeight: 1.4 }}>
               {alert.description}
             </Typography>
           </Box>

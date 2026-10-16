@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, Typography, Divider, Chip, Paper } from '@mui/material';
+import { Box, Typography, Chip, Paper } from '@mui/material';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import WarningIcon from '@mui/icons-material/Warning';
 import { useTranslation } from 'react-i18next';
@@ -48,7 +48,7 @@ const RouteCard: React.FC<{ route: RouteOption; selected: boolean; onClick: () =
           )}
         </Box>
         <Typography variant="body2" color="text.secondary" sx={{ fontFamily: 'var(--font-mono)' }}>
-          {t('trip.duration', { min: route.total_duration_min })}
+          {route.total_duration_min == null ? '— min' : t('trip.duration', { min: Math.round(route.total_duration_min) })}
         </Typography>
         <Typography variant="body2" color="text.secondary">
           {route.transfers === 0 ? 'Direct' : t('trip.transfers', { n: route.transfers, count: route.transfers })}

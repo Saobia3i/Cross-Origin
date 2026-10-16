@@ -1,6 +1,6 @@
 import React from 'react';
 import {
-  Container, Typography, Box, Grid, Paper, Button, Chip,
+  Container, Typography, Box, Paper, Button, Chip, TextField, Autocomplete,
 } from '@mui/material';
 import BarChartIcon from '@mui/icons-material/BarChart';
 import BlockIcon from '@mui/icons-material/Block';
@@ -9,7 +9,10 @@ import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuthStore } from '../store/auth';
-import { fetchReports, verifyReport, rejectReport, resolveReport } from '../api/endpoints';
+import {
+  fetchReports, verifyReport, rejectReport, resolveReport, fetchNetwork,
+  adminListUsers, adminUserAction, adminBlockRoute, adminUnblockRoute,
+} from '../api/endpoints';
 import type { Report } from '../api/schemas';
 import { StatusBadge } from '../components/StatusBadge';
 import { ErrorBox } from '../components/Feedback';
@@ -19,7 +22,7 @@ const StatCard: React.FC<{ label: string; value: number; icon: React.ReactNode; 
   <Paper elevation={0} sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 2, p: 2.5 }}>
     <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
       <Box>
-        <Typography variant="caption" color="text.secondary" fontWeight={600}>{label}</Typography>
+        <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 600 }}>{label}</Typography>
         <Typography variant="h4" sx={{ fontFamily: 'var(--font-mono)', fontWeight: 700, color, mt: 0.5 }}>
           {value}
         </Typography>
@@ -53,7 +56,7 @@ const ModerationQueue: React.FC = () => {
 
   return (
     <Box>
-      <Typography variant="subtitle1" fontWeight={700} sx={{ fontFamily: 'var(--font-heading)', mb: 1.5 }}>
+      <Typography variant="subtitle1" sx={{ fontWeight: 700, fontFamily: 'var(--font-heading)', mb: 1.5 }}>
         {t('admin.moderation')} ({pending.length})
       </Typography>
       {pending.length === 0 && <Typography variant="body2" color="text.secondary">No pending reports.</Typography>}
@@ -63,7 +66,7 @@ const ModerationQueue: React.FC = () => {
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1 }}>
             <Box>
               <StatusBadge status={a.status} />
-              <Typography variant="body2" fontWeight={500} sx={{ mt: 0.5 }}>{a.description}</Typography>
+              <Typography variant="body2" sx={{ fontWeight: 500, mt: 0.5 }}>{a.description}</Typography>
               <Typography variant="caption" color="text.secondary">{a.affected_hub} · ↑{a.upvotes} ↓{a.downvotes}</Typography>
             </Box>
           </Box>
@@ -77,6 +80,79 @@ const ModerationQueue: React.FC = () => {
           </Box>
         </Paper>
       ))}
+    </Box>
+  );
+};
+
+// ── Users (verification) ────────────────────────────────────────
+const UsersPanel: React.FC = () => {
+  const qc = useQueryClient();
+  const { data, isLoading, error } = useQuery({ queryKey: ['admin-users'], queryFn: adminListUsers });
+  const act = useMutation({
+    mutationFn: ({ id, action }: { id: number; action: 'verify' | 'disable' | 'enable' }) => adminUserAction(id, action),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['admin-users'] }),
+  });
+  if (isLoading) return <Typography color="text.secondary">Loading users…</Typography>;
+  if (error) return <ErrorBox message={(error as Error).message} />;
+  return (
+    <Box>
+      <Typography variant="subtitle1" sx={{ fontWeight: 700, fontFamily: 'var(--font-heading)', mb: 1.5 }}>
+        Users ({(data ?? []).length})
+      </Typography>
+      {(data ?? []).map((u) => (
+        <Paper key={u.id} elevation={0} sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 1.5, p: 1.5, mb: 1, display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
+          <Box sx={{ flex: 1, minWidth: 160 }}>
+            <Typography variant="body2" sx={{ fontWeight: 600 }}>{u.name}</Typography>
+            <Typography variant="caption" color="text.secondary">{u.email}</Typography>
+          </Box>
+          <Chip size="small" label={u.role} />
+          <Chip size="small" color={u.is_verified ? 'success' : 'warning'} label={u.is_verified ? 'verified' : 'unverified'} />
+          {u.status !== 'active' && <Chip size="small" color="error" label={u.status} />}
+          {!u.is_verified && (
+            <Button size="small" variant="contained" onClick={() => act.mutate({ id: u.id, action: 'verify' })}>Verify</Button>
+          )}
+          {u.role !== 'admin' && (u.status === 'active'
+            ? <Button size="small" color="error" variant="outlined" onClick={() => act.mutate({ id: u.id, action: 'disable' })}>Disable</Button>
+            : <Button size="small" variant="outlined" onClick={() => act.mutate({ id: u.id, action: 'enable' })}>Enable</Button>)}
+        </Paper>
+      ))}
+      {act.error && <Typography color="error.main" variant="caption">{(act.error as Error).message}</Typography>}
+    </Box>
+  );
+};
+
+// ── Road closures ───────────────────────────────────────────────
+const RoadsPanel: React.FC = () => {
+  const qc = useQueryClient();
+  const { data: net } = useQuery({ queryKey: ['network'], queryFn: fetchNetwork });
+  const [routeId, setRouteId] = React.useState<string | null>(null);
+  const [reason, setReason] = React.useState('');
+  const refresh = () => qc.invalidateQueries({ queryKey: ['network'] });
+  const block = useMutation({ mutationFn: () => adminBlockRoute(routeId!, reason || undefined), onSuccess: () => { setReason(''); refresh(); } });
+  const unblock = useMutation({ mutationFn: (id: string) => adminUnblockRoute(id), onSuccess: refresh });
+  const routes = net?.routes ?? [];
+  const closed = routes.filter((r) => r.status === 'closed');
+  return (
+    <Box>
+      <Typography variant="subtitle1" sx={{ fontWeight: 700, fontFamily: 'var(--font-heading)', mb: 1.5 }}>
+        Road closures ({closed.length})
+      </Typography>
+      <Box sx={{ display: 'flex', gap: 1, mb: 1.5, flexDirection: { xs: 'column', sm: 'row' } }}>
+        <Autocomplete size="small" sx={{ flex: 2 }} options={routes.filter((r) => r.status !== 'closed').map((r) => r.route_id)}
+          value={routeId} onChange={(_, v) => setRouteId(v)} renderInput={(p) => <TextField {...p} label="Route to block" />} />
+        <TextField size="small" sx={{ flex: 1 }} label="Reason" value={reason} onChange={(e) => setReason(e.target.value)} />
+        <Button variant="contained" color="error" disabled={!routeId || block.isPending} onClick={() => block.mutate()}>Block</Button>
+      </Box>
+      {closed.map((r) => (
+        <Paper key={r.route_id} elevation={0} sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 1.5, p: 1.5, mb: 1, display: 'flex', alignItems: 'center', gap: 1 }}>
+          <Box sx={{ flex: 1 }}>
+            <Typography variant="body2" sx={{ fontWeight: 600 }}>{r.route_id}</Typography>
+            <Typography variant="caption" color="text.secondary">{r.closed_reason}</Typography>
+          </Box>
+          <Button size="small" variant="outlined" onClick={() => unblock.mutate(r.route_id)}>Unblock</Button>
+        </Paper>
+      ))}
+      {(block.error || unblock.error) && <Typography color="error.main" variant="caption">{((block.error || unblock.error) as Error).message}</Typography>}
     </Box>
   );
 };
@@ -110,9 +186,12 @@ const AdminPage: React.FC = () => {
         <StatCard label="Closed roads"   value={alerts.filter((a) => a.edge_closed).length}             icon={<BlockIcon />}           color="#E11D48" />
       </Box>
 
-      {/* TODO: road block/unblock and fare-rule editing endpoints are 501 NOT_IMPLEMENTED in the backend catalog. */}
-      <Box sx={{ display: 'grid', gridTemplateColumns: '1fr', gap: 3 }}>
+      <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 3 }}>
         <ModerationQueue />
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+          <UsersPanel />
+          <RoadsPanel />
+        </Box>
       </Box>
     </Container>
   );

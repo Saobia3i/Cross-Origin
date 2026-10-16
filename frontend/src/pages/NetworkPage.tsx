@@ -39,7 +39,6 @@ const HubsTab: React.FC<{ hubs: Hub[]; q: string }> = ({ hubs, q }) => {
 };
 
 const RoutesTab: React.FC<{ routes: RouteEdge[]; q: string }> = ({ routes, q }) => {
-  const { t } = useTranslation();
   const filtered = routes.filter(r =>
     r.origin_hub.toLowerCase().includes(q.toLowerCase()) ||
     r.destination_hub.toLowerCase().includes(q.toLowerCase()) ||

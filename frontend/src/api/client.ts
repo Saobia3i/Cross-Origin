@@ -54,6 +54,11 @@ apiClient.interceptors.response.use(
   },
   (err: AxiosError<{ errors?: ApiErrorItem[] }>) => {
     const errors = err.response?.data?.errors ?? [];
+    // A stored token the backend no longer accepts (expired, reseeded DB, old dev token): log out.
+    const code = errors[0]?.code;
+    if (code === 'INVALID_TOKEN' || code === 'TOKEN_EXPIRED' || code === 'ACCOUNT_DISABLED') {
+      useAuthStore.getState().clearAuth();
+    }
     const msg = errors[0]?.message || err.message || 'Network error';
     return Promise.reject(new ApiError(msg, errors, err.response?.status));
   },
