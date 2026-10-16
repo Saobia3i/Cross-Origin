@@ -1,0 +1,17 @@
+Section,Hub wealth index
+Hub,Wealth_Index
+Mirpur,1.23
+
+Section,Mode rates
+Mode,Base_BDT,Per_km_BDT,Min_BDT,Speed_kmh,Low_Band,High_Band
+Rickshaw,11,22,33,4,0.5,1.5
+Local Bus,0,1.11,5,10,1,1
+
+Section,Multipliers
+Mode,Rain,Peak,Detour,Regular_Holiday,Festive_Holiday
+Rickshaw,1.1,1.2,1.3,0.9,1.4
+Local Bus,1.0,1.0,1.05,0.95,1.1
+
+Section,Rules
+Rule,Value
+Student,"50% off bus only, min Tk 10"

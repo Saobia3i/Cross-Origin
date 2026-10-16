@@ -1,0 +1,2 @@
+route_id,mode,origin,destination,one_way,status,distance_km,time_min
+TF-1,Local Bus,Farmgate,Uttara North,yes,closed,9.99,99
