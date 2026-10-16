@@ -29,7 +29,7 @@ const HubsTab: React.FC<{ hubs: Hub[]; q: string }> = ({ hubs, q }) => {
         {filtered.map(h => (
           <TableRow key={h.hub_id} hover>
             <TableCell><code style={{ fontSize: 12 }}>{h.hub_id}</code></TableCell>
-            <TableCell fontWeight={500}>{h.name}{h.name_bn && <span style={{ marginLeft: 8, color: '#64748B', fontSize: 13 }}>{h.name_bn}</span>}</TableCell>
+            <TableCell sx={{ fontWeight: 500 }}>{h.name}{h.name_bn && <span style={{ marginLeft: 8, color: '#64748B', fontSize: 13 }}>{h.name_bn}</span>}</TableCell>
             <TableCell><Chip label={h.type} size="small" variant="outlined" /></TableCell>
             <TableCell sx={{ fontFamily: 'var(--font-mono)', fontSize: 12 }}>{h.lat?.toFixed(4)}, {h.lng?.toFixed(4)}</TableCell>
           </TableRow>
@@ -103,7 +103,7 @@ const NetworkPage: React.FC = () => {
         <TextField
           size="small" value={q} onChange={(e) => setQ(e.target.value)}
           placeholder={t('network.search')}
-          InputProps={{ startAdornment: <InputAdornment position="start"><SearchIcon fontSize="small" /></InputAdornment> }}
+          slotProps={{ input: { startAdornment: <InputAdornment position="start"><SearchIcon fontSize="small" /></InputAdornment> } }}
           sx={{ width: 280 }}
         />
       </Box>
