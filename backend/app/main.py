@@ -35,12 +35,6 @@ app.add_middleware(
 )
 
 
-@app.get("/health", tags=["meta"])
-async def health():
-    """Render health-check endpoint."""
-    return JSONResponse({"ok": True, "service": "dhakapath-backend"})
-
-
 @app.exception_handler(ApiError)
 async def api_error_handler(request: Request, exc: ApiError):
     return error(exc.code, exc.message, exc.status_code, exc.field, exc.details)
