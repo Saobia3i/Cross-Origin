@@ -15,6 +15,7 @@ TTL_SECONDS = 30 * 60
 MAX_ENTRIES = 500
 
 _lock = threading.Lock()
+_queries: dict[str, dict] = {}
 _entries: "OrderedDict[tuple[str, str], tuple[float, dict]]" = OrderedDict()
 
 
@@ -39,6 +40,16 @@ def remember_options(session_id: str | None, options: list[dict]) -> None:
             _entries.popitem(last=False)
 
 
+def remember_query(session_id: str | None, query: dict) -> None:
+    with _lock:
+        _queries[session_id or ""] = dict(query)
+
+
+def recall_query(session_id: str | None) -> dict | None:
+    with _lock:
+        return _queries.get(session_id or "")
+
+
 def recall_option(session_id: str | None, option_id: str) -> dict | None:
     with _lock:
         hit = _entries.get(_key(session_id, option_id))
@@ -54,3 +65,4 @@ def recall_option(session_id: str | None, option_id: str) -> dict | None:
 def clear() -> None:
     with _lock:
         _entries.clear()
+        _queries.clear()

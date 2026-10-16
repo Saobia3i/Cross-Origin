@@ -345,10 +345,29 @@ class DraftOut(ORM):
 
 # ---- simulation -------------------------------------------------------------
 class SimulationCreate(BaseModel):
-    session_id: str
+    session_id: str = Field(min_length=1, max_length=100)
     scenario_type: ScenarioType
+    zone_hub: Optional[str] = Field(default=None, max_length=120)
+    # optional: the journey to compare before/after (defaults to the session's last trip search)
+    origin: Optional[str] = Field(default=None, max_length=120)
+    destination: Optional[str] = Field(default=None, max_length=120)
+    prefer_student_fare: Optional[bool] = None
+
+
+class SimulationResetRequest(BaseModel):
+    session_id: str = Field(min_length=1, max_length=100)
+
+
+class ScenarioEffects(BaseModel):
+    scenario_type: str
+    fare_scenario: str
+    time_scenario: Optional[str] = None
     zone_hub: Optional[str] = None
-    duration_min: Optional[int] = Field(default=None, gt=0)
+    closed_route_ids: list[str] = []
+    closure_reasons: dict[str, str] = {}
+    time_overrides: dict[str, float] = {}  # route_id -> dataset scenario travel time (min)
+    extra_transfer_wait_min: float = 0
+    warnings: list[str] = []
 
 
 class SimulationOut(ORM):
@@ -384,18 +403,78 @@ class DebugEventPublish(BaseModel):
 
 
 # ---- chat -----------------------------------------------------------------------
+ChatIntentName = Literal[
+    "find_route", "request_alternative_route", "compare_fare", "submit_disruption_report", "confirm_report_draft",
+    "explain_fare_rule", "alert_reliability", "apply_simulation", "reset_simulation", "smalltalk", "unknown"]
+UiLanguage = Literal["en", "bn", "banglish"]
+
+
+class ChatEntities(BaseModel):
+    """What the user said, as text. Hub names here are NOT yet resolved or trusted (the backend resolves them)."""
+    model_config = ConfigDict(extra="ignore")
+    origin: Optional[str] = None
+    destination: Optional[str] = None
+    budget_bdt: Optional[int] = Field(default=None, ge=0, le=1_000_000)
+    prefer_student_fare: Optional[bool] = None
+    avoid_hubs: list[str] = Field(default_factory=list, max_length=10)
+    avoid_modes: list[str] = Field(default_factory=list, max_length=12)
+    optimize: Optional[Literal["cheapest", "fastest", "fewest_transfers", "balanced"]] = None
+    mode: Optional[str] = None
+    report_type: Optional[Literal["waterlogging", "road_construction", "severe_gridlock", "intersection_blockade",
+                                  "fare_surge", "accident", "all_clear", "other"]] = None
+    severity: Optional[Literal["light", "moderate", "heavy", "critical"]] = None
+    hub: Optional[str] = None
+    fare_amount_bdt: Optional[float] = Field(default=None, ge=0)
+    description: Optional[str] = Field(default=None, max_length=500)
+    scenario_type: Optional[Literal["heavy_rain", "peak_rush_hour", "blocked_intersection", "regular_holiday",
+                                    "festive_holiday"]] = None
+    zone_hub: Optional[str] = None
+    report_id: Optional[str] = None
+    confirm: Optional[bool] = None   # confirm_report_draft: True = submit, False = cancel
+    fare_focus: Optional[bool] = None
+
+
+class IntentResult(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    intent: ChatIntentName = "unknown"
+    entities: ChatEntities = Field(default_factory=ChatEntities)
+    language: UiLanguage = "en"
+    confidence: float = Field(default=0.5, ge=0, le=1)
+    source: str = "rules"  # rules | llm:<provider>
+    normalized_text: str = ""
+
+
 class ChatRequest(BaseModel):
-    session_id: Optional[str] = None
+    session_id: Optional[str] = Field(default=None, max_length=100)
     message: str = Field(min_length=1, max_length=2000)
+    ui_language: Optional[UiLanguage] = None
+
+
+class ChatAction(BaseModel):
+    type: Literal["show_route_options", "show_fare_breakdown", "show_draft_report", "confirm_draft_report",
+                  "show_reliability", "highlight_map_route", "apply_simulation"]
+    payload_key: str
+
+
+class ChatGrounding(BaseModel):
+    checked: bool = True
+    valid: bool
+    violations: list[dict] = []
+    fallback_used: bool = False
 
 
 class ChatResponse(BaseModel):
     session_id: str
+    message_id: str
     reply_text: str  # never `reply.text`
-    intent: Optional[str] = None
+    language_detected: UiLanguage = "en"
+    intent: str
     entities: dict = {}
-    payload: Optional[dict] = None
-    grounding: Optional[dict] = None
+    actions: list[ChatAction] = []
+    structured_payload: dict = {}
+    grounding: ChatGrounding
+    context_state: dict = {}
+    suggested_followups: list[str] = []
 
 
 class ChatMessageOut(ORM):
@@ -404,6 +483,9 @@ class ChatMessageOut(ORM):
     role: ChatRole
     content: str
     intent: Optional[str] = None
+    entities: Optional[dict] = Field(default=None, validation_alias="entities_json")
+    structured_payload: Optional[dict] = Field(default=None, validation_alias="payload_json")
+    grounding: Optional[dict] = Field(default=None, validation_alias="grounding_json")
     created_at: datetime
 
 
@@ -551,6 +633,7 @@ class TripSearchData(BaseModel):
     disruptions: dict = {}
     warnings: list[str] = []
     warning_codes: list[str] = []
+    grounding: Optional[dict] = None  # grounding badge: every option was checked against the engines
 
 
 class FareLegRef(BaseModel):
@@ -578,3 +661,63 @@ class FareEstimateData(TripFareResult):
     prefer_student_fare: bool = False
     session_id: Optional[str] = None
     legs_source: Literal["cached_route_option", "request_legs"]
+
+
+# ---- grounding ----------------------------------------------------------------------
+class GroundingCheckRequest(BaseModel):
+    """Exactly one of route_option / chat_response."""
+    route_option: Optional[dict] = None
+    chat_response: Optional[dict] = None
+    scenario: Optional[str] = None
+    session_id: Optional[str] = Field(default=None, max_length=100)
+    secret: Optional[str] = None  # or the X-Demo-Secret header
+
+    @model_validator(mode="after")
+    def _exactly_one(self):
+        if (self.route_option is None) == (self.chat_response is None):
+            raise ValueError("provide exactly one of route_option or chat_response")
+        return self
+
+
+class FakeGroundingRequest(BaseModel):
+    model_config = ConfigDict(extra="allow")  # AI-style extras (legs, alert ids...) are checked too
+    route_ids: list[str] = []
+    claimed_fare_bdt: Optional[float] = None
+    claimed_duration_min: Optional[float] = None
+    hub_ids: list[str] = []
+    scenario: Optional[str] = None
+    session_id: Optional[str] = Field(default=None, max_length=100)
+    secret: Optional[str] = None
+
+
+# ---- ride-share --------------------------------------------------------------
+class RideShareCreate(BaseModel):
+    mode: str
+    origin_hub: Optional[str] = Field(default=None, max_length=120)
+    destination_hub: Optional[str] = Field(default=None, max_length=120)
+    hub_id: Optional[str] = Field(default=None, max_length=120)
+    seats_total: int = Field(ge=2, le=8)
+    scenario: str = "normal"
+    notes: Optional[str] = Field(default=None, max_length=500)
+    expires_in_minutes: int = Field(default=120, ge=5, le=1440)
+
+
+class RideShareFilters(BaseModel):
+    hub_id: Optional[str] = None
+    origin_hub: Optional[str] = None
+    destination_hub: Optional[str] = None
+    mode: Optional[str] = None
+    status: Optional[str] = None
+    active_only: bool = True
+
+
+class RideShareSplit(BaseModel):
+    """Equal split of the estimated total; every money field is null when no fare estimate exists."""
+    participants: int
+    total_fare_min_bdt: Optional[Money] = None
+    total_fare_max_bdt: Optional[Money] = None
+    per_person_min_bdt: Optional[Money] = None
+    per_person_max_bdt: Optional[Money] = None
+    suggested_safe_per_person_bdt: Optional[int] = None
+    currency: str = "BDT"
+    note: str = "Estimate split equally. Suggested safe amount is upper-bound ceil."

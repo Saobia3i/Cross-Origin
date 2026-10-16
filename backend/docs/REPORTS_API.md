@@ -65,7 +65,7 @@ A **downvote** never refreshes. Retracting a vote or switching to a downvote doe
 | `POST /api/admin/reports/{id}/reject` `{reason}` / `/reopen` `{reason?}` | admin | |
 | `GET /api/reports?status&report_type&affected_hub&since&limit` | public | newest first, limit 1-200 (default 50); adds `my_vote` when logged in |
 | `GET /api/reports/{id}` | public | |
-| `GET /api/events?since_id&session_id&limit&event_type` | public | `{events, next_since_id, has_more}` |
+| `GET /api/events?since_id&session_id&limit&event_type` | public | `{events, latest_id, next_since_id (same value), has_more}` |
 | `POST /api/events/publish-debug` | `DEMO_SECRET` (header `X-Demo-Secret` or body `secret`) | inserts one event only |
 
 Report fields include `upvotes, downvotes, confidence, freshness, expires_at, last_verified_at, status, affects_routing,
@@ -82,4 +82,4 @@ All 19 contract types are valid. This feature publishes `report.draft.created`, 
 and `route.recalculated` (payload `{reason, report_id, affected_hub, affected_route_ids}`) when a change adds or removes a
 routing effect. Events are written in the same transaction as the change. Draft events carry the draft's `session_id` and
 are only visible to that session; report and route events are global. Cancelling a draft publishes nothing (no event type exists for it).
-Payloads hold no personal data. `GET /api/events` is oldest-first; poll with `since_id = next_since_id`.
+Payloads hold no personal data. `GET /api/events` is oldest-first; poll with `since_id = latest_id`.

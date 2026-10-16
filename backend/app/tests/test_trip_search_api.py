@@ -287,7 +287,7 @@ def test_simulation_fare_scenario_is_reported(client, engine):
     add(engine, Simulation(scenario_id="rain1", session_id="S1", scenario_type="heavy_rain", effects_json={}))
     d = data(search(client, session_id="S1", avoid_modes=["mrt"]))
     assert d["scenario"] == "rain" and d["active_scenario"]["scenario_type"] == "heavy_rain"
-    assert d["active_scenario"]["effects"] == {"fare_scenario": "rain", "time_scenario": "rain"}
+    assert d["active_scenario"]["effects"]["fare_scenario"] == "rain" and d["active_scenario"]["effects"]["time_scenario"] == "rain"
     assert data(search(client, avoid_modes=["mrt"]))["scenario"] == "normal"
 
 
