@@ -13,7 +13,7 @@ interface Props extends TypographyProps {
 }
 
 export const FareText: React.FC<Props> = ({ amount, min, max, size = 'md', showLabel = false, sx, ...rest }) => {
-  const { t, i18n } = useTranslation();
+  const { i18n } = useTranslation();
   const isBn = i18n.language === 'bn';
 
   const fontSizeMap = { sm: '0.875rem', md: '1rem', lg: '1.25rem' };

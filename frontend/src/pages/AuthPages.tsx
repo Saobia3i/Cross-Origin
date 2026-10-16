@@ -1,19 +1,20 @@
 import React, { useState } from 'react';
 import {
   Container, Box, Typography, TextField, Button, Paper, Divider,
-  Link as MuiLink, Alert, Chip,
+  Link as MuiLink,
 } from '@mui/material';
 import { Link, useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useTranslation } from 'react-i18next';
+import { useQueryClient } from '@tanstack/react-query';
 import { login, register } from '../api/endpoints';
 import { useAuthStore } from '../store/auth';
 
 const loginSchema = z.object({
   email:    z.string().email(),
-  password: z.string().min(6),
+  password: z.string().min(1, 'Password is required'),
 });
 const registerSchema = loginSchema.extend({
   name:  z.string().min(2),
@@ -23,52 +24,30 @@ const registerSchema = loginSchema.extend({
 type LoginForm    = z.infer<typeof loginSchema>;
 type RegisterForm = z.infer<typeof registerSchema>;
 
-// ── Dev bypass users — works WITHOUT backend ──────────────────────
-const DEV_USERS: Record<string, { name: string; role: 'admin' | 'user' }> = {
-  'admin@dev':     { name: 'Dev Admin',      role: 'admin' },
-  'super@dev':     { name: 'Dev Superadmin', role: 'admin' },  // backend roles are user|admin only
-  'user@dev':      { name: 'Dev User',       role: 'user' },
-};
-const DEV_PASSWORD = 'devpass';
-
 export const LoginPage: React.FC = () => {
   const { t } = useTranslation();
   const { setAuth } = useAuthStore();
   const navigate = useNavigate();
+  const qc = useQueryClient();
   const [error, setError] = useState('');
 
   const { register: reg, handleSubmit, formState: { errors, isSubmitting } } = useForm<LoginForm>({
     resolver: zodResolver(loginSchema),
   });
 
-  const onSubmit = async (data: LoginForm) => {
+  const doLogin = async (email: string, password: string) => {
     setError('');
-
-    // ── Dev bypass (no backend needed) ──────────────────────────
-    const devUser = DEV_USERS[data.email];
-    if (devUser && data.password === DEV_PASSWORD) {
-      setAuth({ id: 1, name: devUser.name, email: data.email, role: devUser.role }, 'dev-token');
-      navigate('/');
-      return;
-    }
-
-    // ── Real backend login ───────────────────────────────────────
     try {
-      const res = await login(data.email, data.password);
+      const res = await login(email, password);
       setAuth(res.user, res.access_token);
-      navigate('/');
+      qc.invalidateQueries();
+      navigate(res.user.role === 'admin' ? '/admin' : '/');
     } catch (e) {
       setError((e as Error).message || 'Login failed. Backend may be offline.');
     }
   };
 
-  const quickLogin = (email: string) => {
-    setAuth(
-      { id: 1, name: DEV_USERS[email].name, email, role: DEV_USERS[email].role },
-      'dev-token'
-    );
-    navigate('/');
-  };
+  const onSubmit = (data: LoginForm) => doLogin(data.email, data.password);
 
   return (
     <Container maxWidth="xs" sx={{ py: 6 }}>
@@ -76,40 +55,9 @@ export const LoginPage: React.FC = () => {
         {/* Logo */}
         <Box sx={{ textAlign: 'center', mb: 3 }}>
           <Box sx={{ fontSize: 48, mb: 1 }}>🛣️</Box>
-          <Typography variant="h5" fontFamily="var(--font-heading)" fontWeight={700}>DhakaPath</Typography>
+          <Typography variant="h5" sx={{ fontFamily: "var(--font-heading)", fontWeight: 700 }}>DhakaPath</Typography>
           <Typography variant="body2" color="text.secondary">{t('auth.login')}</Typography>
         </Box>
-
-        {/* Dev quick-login panel */}
-        <Alert
-          severity="info"
-          sx={{ mb: 2, borderRadius: 2, fontSize: '0.8rem' }}
-          icon={false}
-        >
-          <Typography variant="caption" fontWeight={700} display="block" mb={0.75}>
-            🔧 Dev Mode — 1-click login (backend not needed)
-          </Typography>
-          <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
-            <Chip
-              label="Admin" size="small" clickable
-              onClick={() => quickLogin('admin@dev')}
-              sx={{ backgroundColor: '#E6B800', color: '#1A1600', fontWeight: 700 }}
-            />
-            <Chip
-              label="Superadmin" size="small" clickable
-              onClick={() => quickLogin('super@dev')}
-              sx={{ backgroundColor: '#2E7D4F', color: '#fff', fontWeight: 700 }}
-            />
-            <Chip
-              label="User" size="small" clickable
-              onClick={() => quickLogin('user@dev')}
-              sx={{ backgroundColor: '#3A3930', color: '#F2F0EA', fontWeight: 700 }}
-            />
-          </Box>
-          <Typography variant="caption" color="text.secondary" display="block" mt={0.5}>
-            Or use email: <code>admin@dev</code> / password: <code>devpass</code>
-          </Typography>
-        </Alert>
 
         {/* Normal form */}
         <Box component="form" onSubmit={handleSubmit(onSubmit)} sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
@@ -130,7 +78,7 @@ export const LoginPage: React.FC = () => {
         <Divider sx={{ my: 2 }} />
         <Typography variant="body2" color="text.secondary" sx={{ textAlign: 'center' }}>
           {t('auth.noAccount')}{' '}
-          <MuiLink component={Link} to="/register" fontWeight={600}>{t('auth.register')}</MuiLink>
+          <MuiLink component={Link} to="/register" sx={{ fontWeight: 600 }}>{t('auth.register')}</MuiLink>
         </Typography>
       </Paper>
     </Container>
@@ -161,7 +109,7 @@ export const RegisterPage: React.FC = () => {
   return (
     <Container maxWidth="xs" sx={{ py: 6 }}>
       <Paper elevation={0} sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 3, p: 4 }}>
-        <Typography variant="h5" fontFamily="var(--font-heading)" fontWeight={700} sx={{ textAlign: 'center' }} mb={3}>
+        <Typography variant="h5" sx={{ fontFamily: "var(--font-heading)", fontWeight: 700, mb: 3, textAlign: 'center' }}>
           {t('auth.register')}
         </Typography>
 
@@ -178,7 +126,7 @@ export const RegisterPage: React.FC = () => {
         <Divider sx={{ my: 2 }} />
         <Typography variant="body2" color="text.secondary" sx={{ textAlign: 'center' }}>
           {t('auth.hasAccount')}{' '}
-          <MuiLink component={Link} to="/login" fontWeight={600}>{t('auth.login')}</MuiLink>
+          <MuiLink component={Link} to="/login" sx={{ fontWeight: 600 }}>{t('auth.login')}</MuiLink>
         </Typography>
       </Paper>
     </Container>

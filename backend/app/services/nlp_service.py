@@ -49,10 +49,74 @@ _LEADING_NOISE = {"ami", "amar", "i", "want", "need", "to", "go", "route", "from
                   "ekhon", "now", "the", "a", "me", "give", "tell", "dao", "dekho", "koro", "thik", "ache"}
 
 
+# -------------------------------------------------------------------------- Bangla script -> canonical Banglish
+_BN_DIGITS = str.maketrans("০১২৩৪৫৬৭৮৯", "0123456789")
+# Phrase -> canonical token(s). Longest phrases are tried first; most match as a word prefix so suffixes ("-e", "-te",
+# "-r") are absorbed. Entries in _BN_EXACT must be a whole word (short words that are prefixes of many others).
+_BN_PHRASES = {
+    # hubs
+    "মিরপুর": "mirpur", "মতিঝিল": "motijheel", "ফার্মগেট": "farmgate", "উত্তরা": "uttara north", "শাহবাগ": "shahbagh",
+    "ধানমন্ডি": "dhanmondi", "মোহাম্মদপুর": "mohammadpur", "আগারগাঁও": "agargaon", "মহাখালী": "mohakhali",
+    "বাড্ডা": "badda", "যাত্রাবাড়ী": "jatrabari", "বনশ্রী": "banasree", "মালিবাগ": "malibagh",
+    "সায়েন্স ল্যাব": "science lab", "কারওয়ান বাজার": "karwan bazar", "গাবতলী": "gabtoli", "পল্লবী": "pallabi",
+    "কাজীপাড়া": "kazipara", "শেওড়াপাড়া": "shewra para", "নিউ মার্কেট": "new market", "বিজয় সরণি": "bijoy sarani",
+    "ক্যান্টনমেন্ট": "cantonment", "ঢাকা বিশ্ববিদ্যালয়": "dhaka univ.", "সচিবালয়": "secretariat",
+    "স্টেডিয়াম": "stadium", "খিলক্ষেত": "khilkhet", "কুড়িল": "kuril", "সোনারগাঁও": "sonargaon hotel",
+    "শেরাটন": "sheraton", "বাংলা মোটর": "bangla motor", "কাকরাইল": "kakrail", "আজিমপুর": "azampur",
+    "কলাবাগান": "kalabagan", "তালতলা": "taltola", "শ্যামলী": "shamoli", "রাজলক্ষ্মী": "rajlokkhi",
+    "আসাদ গেট": "asad gate", "দারুস সালাম": "darussalam", "জাহাঙ্গীর গেট": "jahangir gate", "ইউনিভার্সিটি": "dhaka univ.",
+    # journey / budget
+    "যেতে চাই": " jabo ", "যেতে চাচ্ছি": " jabo ", "যেতে": " jabo ", "যাবো": " jabo ", "যাব": " jabo ",
+    "যাচ্ছি": " jabo ", "থেকে": " theke ", "বাজেট": " budget ", "টাকা": " taka ", "৳": " taka ",
+    "সবচেয়ে দ্রুত": " fastest ", "দ্রুত": " fastest ", "সবচেয়ে সস্তা": " cheap ", "সস্তা": " cheap ",
+    "কম খরচ": " cheap ", "কম পরিবর্তন": " fewest transfer ", "ভাড়া কত": " koto fare ", "কত লাগবে": " koto lagbe ",
+    "কত": " koto ", "ভাড়া": " fare ", "ছাত্র": " student ", "স্টুডেন্ট": " student ", "শিক্ষার্থী": " student ",
+    "রুট": " route ", "রিকশা": " rickshaw ", "মেট্রো": " metro ", "সিএনজি": " cng ", "লেগুনা": " leguna ",
+    "বাস": " bus ", "বিকল্প": " alternative route ", "অন্য রুট": " alternative route ", "এড়িয়ে": " avoid ",
+    "বাদ দিয়ে": " avoid ", "এড়াতে": " avoid ",
+    # street conditions / reports
+    "জলাবদ্ধতা": " pani joma ", "পানি জমে": " pani joma ", "পানি জমা": " pani joma ", "জ্যাম": " jam ",
+    "যানজট": " jam ", "ট্রাফিক": " traffic ", "দুর্ঘটনা": " accident ", "অ্যাক্সিডেন্ট": " accident ",
+    "নির্মাণ": " construction ", "রাস্তা খোঁড়া": " construction ", "বন্ধ": " bondho ", "অবরোধ": " blockade ",
+    "রিপোর্ট": " report ", "রাস্তা পরিষ্কার": " road clear ", "জ্যাম নেই": " jam nai ", "বৃষ্টি": " rain ",
+    "আছে": " ache ", "হয়েছে": " hoyeche ", "খুব": " khub ", "অনেক": " onek ", "একটু": " ektu ",
+    # misc
+    "নিয়ম": " niyom ", "ছাড়": " discount ", "নির্ভরযোগ্য": " biswas ", "বিশ্বাস": " biswas ", "সিমুলেশন": " simulation ",
+    "অফিস টাইম": " peak ", "অফিস": " office ", "ছুটি": " holiday ", "কনফার্ম": " confirm ", "জমা দিন": " submit ",
+    "বাতিল": " cancel ", "ধন্যবাদ": " dhonnobad ", "হ্যালো": " hello ", "আসসালামু": " salam ", "সালাম": " salam ",
+}
+_BN_EXACT = {"না": " na ", "হ্যাঁ": " ha ", "হ্যা": " ha ", "জি": " ji ", "ঠিক": " thik ", "কি": " ki ", "কী": " ki ",
+             "এ": " e ", "ও": " ar ", "আমি": " ami ", "আমার": " amar "}
+_BN_ANY = "ঀ-৿"
+_BN_PHRASE_RE = re.compile(
+    r"(?<![" + _BN_ANY + r"])(" + "|".join(re.escape(k) for k in sorted(_BN_PHRASES, key=len, reverse=True)) + r")")
+_BN_EXACT_RE = re.compile(
+    r"(?<![" + _BN_ANY + r"])(" + "|".join(re.escape(k) for k in sorted(_BN_EXACT, key=len, reverse=True))
+    + r")(?![" + _BN_ANY + r"])")
+
+
+_BN_HUB_KEYS = [k for k, v in _BN_PHRASES.items() if not v.startswith(" ")]
+_BN_AVOID_RE = re.compile(
+    r"((?:" + "|".join(re.escape(k) for k in sorted(_BN_HUB_KEYS, key=len, reverse=True))
+    + r")[" + _BN_ANY + r"]*(?:\s*[0-9]+)?)\s+(?:এড়িয়ে|বাদ দিয়ে|এড়াতে|বাদ)(?![" + _BN_ANY + r"])")
+
+
+def bangla_to_banglish(text: str) -> str:
+    """Rewrite Bangla-script text into the canonical Banglish tokens the rule parser understands (digits, keywords, hub
+    names). Unknown Bangla words are dropped. Text without Bangla characters is returned unchanged."""
+    if not BANGLA_CHARS.search(text or ""):
+        return text
+    t = text.translate(_BN_DIGITS)
+    t = _BN_AVOID_RE.sub(lambda m: "avoid " + m.group(1), t)  # Bangla verb follows the hub: "ফার্মগেট এড়িয়ে"
+    t = _BN_EXACT_RE.sub(lambda m: _BN_EXACT[m.group(1)], t)
+    t = _BN_PHRASE_RE.sub(lambda m: " " + _BN_PHRASES[m.group(1)] + " ", t)
+    return re.sub(r"[" + _BN_ANY + r"]+", " ", t)
+
+
 def normalize_banglish(text: str) -> str:
     """Lowercase, map common Banglish spellings to canonical tokens (theke, jabo, taka, koro, pani joma, ...),
     drop punctuation and filler particles. Hub names are left as typed."""
-    t = (text or "").lower()
+    t = bangla_to_banglish(text or "").lower()
     for pattern, repl in _REPLACEMENTS:
         t = re.sub(pattern, repl, t)
     t = re.sub(r"[^\w\s.%]|_", " ", t)
@@ -257,7 +321,10 @@ def rule_based_parse(message: str, context: dict | None = None, hub_index: HubIn
     avoid_idx = [i for i, w in enumerate(tokens) if w == "avoid"]
     if mentions and avoid_words:
         for c in list(mentions):
-            if any(abs(c.start - i) <= 2 or abs(c.end - 1 - i) <= 2 for i in avoid_idx):
+            # a hub right before "theke" / after "from" or "to" is the journey's own origin or destination
+            is_endpoint = (c.end < len(tokens) and tokens[c.end] in {"theke", "to"}) or (
+                c.start > 0 and tokens[c.start - 1] in {"from", "to"})
+            if not is_endpoint and any(abs(c.start - i) <= 2 or abs(c.end - 1 - i) <= 2 for i in avoid_idx):
                 ent.avoid_hubs.append(c.matched_text if not hub_index else c.name)
                 mentions.remove(c)
     elif avoid_words and not mentions:

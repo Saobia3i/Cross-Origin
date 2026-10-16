@@ -71,7 +71,7 @@ export default function ConnectedMap({ locate = true }: { locate?: boolean }) {
 
       {hub && (
         <Paper elevation={0} sx={{ position: 'absolute', zIndex: 1000, left: '50%', transform: 'translateX(-50%)', bottom: 56, border: '1px solid', borderColor: 'divider', p: 1.5, display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap', maxWidth: 'calc(100% - 24px)' }}>
-          <Typography variant="subtitle2" sx={{ mr: 1 }}>{hub.name}</Typography>
+          <Typography variant="subtitle2" sx={{ mr: 1 }}>{hub.name}{hub.approx ? ' (approx. location)' : ''}</Typography>
           <Button size="small" variant="contained" sx={{ minHeight: 44 }} onClick={() => { setSearch({ origin: hub.name }); setActiveHub(null); }}>{t('trip.from')}</Button>
           <Button size="small" variant="contained" sx={{ minHeight: 44 }} onClick={() => { setSearch({ destination: hub.name }); setActiveHub(null); }}>{t('trip.to')}</Button>
           <Button size="small" variant="outlined" sx={{ minHeight: 44 }} onClick={() => { setSearch({ avoidHubs: [...new Set([...avoidHubs, hub.id])] }); setActiveHub(null); }}>{t('trip.avoid')}</Button>

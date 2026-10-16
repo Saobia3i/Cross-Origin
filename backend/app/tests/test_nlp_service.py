@@ -417,3 +417,28 @@ def test_rewrite_grounded_reply(monkeypatch, session):
     monkeypatch.setattr(llm_service, "_http_post", lambda *a: openai_style('{"reply_text": ""}'))
     with pytest.raises(llm_service.LLMUnavailable):
         llm_service.rewrite_grounded_reply({"verified_reply": "x"}, "en", session)
+
+
+# ---- Bangla script ---------------------------------------------------------------------------------------
+def test_bangla_script_route_with_bangla_digits_and_budget():
+    r = parse("মিরপুর ১০ থেকে মতিঝিল যেতে চাই, বাজেট ৮০ টাকা")
+    assert r.intent == "find_route" and r.language == "bn"
+    assert (r.entities.origin, r.entities.destination, r.entities.budget_bdt) == ("Mirpur 10", "Motijheel", 80)
+
+
+def test_bangla_script_report_and_confirm():
+    r = parse("ফার্মগেটে জলাবদ্ধতা হয়েছে, রিপোর্ট করো")
+    assert r.intent == "submit_disruption_report" and r.entities.report_type == "waterlogging"
+    assert parse("হ্যাঁ", {"last_draft_id": "d1"}).intent == "confirm_report_draft"
+
+
+def test_bangla_script_avoid_hub_follows_the_hub_name():
+    r = parse("শাহবাগ বাদ দিয়ে বিকল্প রুট দাও")
+    assert r.intent == "request_alternative_route"
+
+
+def test_avoid_does_not_swallow_the_journey_origin(seeded):
+    index = HubIndex.build(seeded)
+    r = parse("Mirpur 10 avoid kore Farmgate theke Uttara", index=index)
+    assert (r.entities.origin, r.entities.destination) == ("Farmgate", "Uttara North")
+    assert [h.lower() for h in r.entities.avoid_hubs] == ["mirpur 10"]

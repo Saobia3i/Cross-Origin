@@ -13,6 +13,7 @@ export interface MapHub {
   lng: number;
   type: string;
   aliases: string[];
+  approx?: boolean;      // position is an approximate display fallback, not dataset data
 }
 
 export interface MapEdge {

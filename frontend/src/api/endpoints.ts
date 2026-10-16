@@ -123,3 +123,15 @@ export const fetchEvents = (sinceId: number, limit = 100) =>
   apiClient
     .get<EventsData>('/api/events', { params: { since_id: sinceId, session_id: getSessionId(), limit } })
     .then(r => r.data);
+
+// ── Admin: users, roads, fare rules ──
+export interface AdminUser {
+  id: number; name: string; email: string; role: 'user' | 'admin'; is_verified: boolean; status: string;
+}
+export const adminListUsers = () => apiClient.get<AdminUser[]>('/api/admin/users').then(r => r.data);
+export const adminUserAction = (id: number, action: 'verify' | 'disable' | 'enable') =>
+  apiClient.post<AdminUser>(`/api/admin/users/${id}/${action}`).then(r => r.data);
+export const adminBlockRoute = (routeId: string, reason?: string) =>
+  apiClient.post(`/api/admin/routes/${encodeURIComponent(routeId)}/block`, { reason }).then(r => r.data);
+export const adminUnblockRoute = (routeId: string) =>
+  apiClient.post(`/api/admin/routes/${encodeURIComponent(routeId)}/unblock`).then(r => r.data);
