@@ -33,6 +33,7 @@ class Settings:
         self.llm_provider = os.getenv("LLM_PROVIDER", "openrouter")
         # models are overridable; the defaults are free-tier models and may need updating
         self.openrouter_model = os.getenv("OPENROUTER_MODEL", "meta-llama/llama-3.1-8b-instruct:free")
+        self.openrouter_vision_model = os.getenv("OPENROUTER_VISION_MODEL", "google/gemini-2.5-flash")
         self.gemini_model = os.getenv("GEMINI_MODEL", "gemini-1.5-flash")
         self.groq_model = os.getenv("GROQ_MODEL", "llama-3.1-8b-instant")
         self.llm_timeout_s = float(os.getenv("LLM_TIMEOUT_S", "8"))

@@ -64,9 +64,6 @@ services:
       - key: OPENROUTER_API_KEY
         sync: false              # paste your key in the Render dashboard
 
-      - key: GEMINI_API_KEY
-        sync: false
-
       - key: GROQ_API_KEY
         sync: false
 
@@ -75,6 +72,9 @@ services:
 
       - key: OPENROUTER_MODEL
         value: meta-llama/llama-3.1-8b-instruct:free
+
+      - key: OPENROUTER_VISION_MODEL
+        value: google/gemini-2.5-flash
 
       - key: GEMINI_MODEL
         value: gemini-1.5-flash

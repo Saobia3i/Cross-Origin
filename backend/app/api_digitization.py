@@ -51,36 +51,46 @@ def _normalise_draft(data: dict[str, Any], source: str) -> dict[str, Any]:
     }
 
 
-def _extract_with_gemini(image: bytes, media_type: str) -> dict[str, Any]:
-    if not settings.gemini_api_key:
+def _extract_with_openrouter(image: bytes, media_type: str) -> dict[str, Any]:
+    if not settings.openrouter_api_key:
         raise RuntimeError("VISION_NOT_CONFIGURED")
     prompt = """Read this Bangladesh public-transit signboard, fare chart, or handwritten route note. Return ONLY JSON with:
 document_type, route_name, operator, mode, origin, destination, stops (array), fare_rows (array of {from,to,fare_bdt}), raw_text, confidence (0-100).
 Do not invent unreadable values: use empty strings/arrays and lower confidence. Preserve Bangla text where present."""
-    body = {"contents": [{"parts": [
-        {"text": prompt},
-        {"inline_data": {"mime_type": media_type, "data": base64.b64encode(image).decode("ascii")}},
-    ]}], "generationConfig": {"temperature": 0, "responseMimeType": "application/json"}}
-    url = f"https://generativelanguage.googleapis.com/v1beta/models/{settings.gemini_model}:generateContent?key={settings.gemini_api_key}"
-    response = httpx.post(url, json=body, timeout=settings.llm_timeout_s)
+    image_data = base64.b64encode(image).decode("ascii")
+    body = {
+        "model": settings.openrouter_vision_model,
+        "temperature": 0,
+        "response_format": {"type": "json_object"},
+        "messages": [{"role": "user", "content": [
+            {"type": "text", "text": prompt},
+            {"type": "image_url", "image_url": {"url": f"data:{media_type};base64,{image_data}"}},
+        ]}],
+    }
+    response = httpx.post(
+        "https://openrouter.ai/api/v1/chat/completions",
+        headers={"Authorization": f"Bearer {settings.openrouter_api_key}"},
+        json=body,
+        timeout=settings.llm_timeout_s,
+    )
     response.raise_for_status()
-    text = response.json()["candidates"][0]["content"]["parts"][0]["text"]
+    text = response.json()["choices"][0]["message"]["content"]
     return json.loads(re.sub(r"^```json\s*|\s*```$", "", text.strip(), flags=re.I))
 
 
 @router.post("/api/digitize/signboard")
 async def digitize_signboard(image: UploadFile = File(...)):
-    """Extract a structured draft from a signboard image using configured Gemini Vision."""
+    """Extract a structured draft from a signboard image using OpenRouter Vision."""
     if image.content_type not in ALLOWED_TYPES:
         raise api_error("UNSUPPORTED_IMAGE", "Upload a JPG, PNG, or WebP image.", field="image")
     content = await image.read()
     if not content or len(content) > MAX_IMAGE_BYTES:
         raise api_error("INVALID_IMAGE_SIZE", "Image must be between 1 byte and 8 MB.", field="image")
     try:
-        draft = _extract_with_gemini(content, image.content_type)
+        draft = _extract_with_openrouter(content, image.content_type)
     except RuntimeError:
-        raise api_error("VISION_NOT_CONFIGURED", "Photo extraction needs GEMINI_API_KEY on the backend.", field="image")
+        raise api_error("VISION_NOT_CONFIGURED", "Photo extraction needs OPENROUTER_API_KEY on the backend.", field="image")
     except (httpx.HTTPError, KeyError, IndexError, json.JSONDecodeError, TypeError) as exc:
         raise api_error("VISION_EXTRACTION_FAILED", "Could not read the signboard. Try a clearer, well-lit photo.",
                         field="image", details={"reason": type(exc).__name__})
-    return success(_normalise_draft(draft, "gemini_vision"))
+    return success(_normalise_draft(draft, "openrouter_vision"))
