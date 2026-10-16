@@ -1,0 +1,21 @@
+/* Map-scoped styles. Leaflet's own CSS is already imported in App.tsx. */
+.dp-map-wrap { position: relative; width: 100%; height: 100%; min-height: 240px; }
+.dp-map { width: 100%; height: 100%; font-family: var(--font-body); background: var(--color-bg, #CCCBC6); }
+/* tiles unavailable → vector layers still draw over a grid = the "schematic" view allowed by the problem statement */
+.dp-map-wrap--schematic .dp-map {
+  background-color: var(--color-surface-2, #E8E5DC);
+  background-image: linear-gradient(var(--color-line, #B4B0A5) 1px, transparent 1px), linear-gradient(90deg, var(--color-line, #B4B0A5) 1px, transparent 1px);
+  background-size: 48px 48px;
+}
+.dp-pin { background: none; border: none; }
+.dp-pin__dot {
+  display: flex; align-items: center; justify-content: center; border-radius: 50%;
+  border: 3px solid #fff; box-shadow: 0 1px 4px rgb(0 0 0 / .45);
+  color: #fff; font: 700 14px/1 var(--font-heading, sans-serif);
+}
+.dp-overlay { position: absolute; z-index: 1000; display: flex; flex-direction: column; gap: 8px; }
+.dp-overlay--tr { top: 12px; right: 12px; align-items: flex-end; }
+.dp-overlay--tl { top: 12px; left: 12px; }
+.dp-overlay--bl { left: 12px; bottom: 28px; right: 72px; }
+.dp-btn44 { width: 44px; height: 44px; }
+/* keep Leaflet's zoom buttons >= 44px (touch target rule in the team doc) — global.css already does this */

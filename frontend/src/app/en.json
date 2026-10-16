@@ -141,5 +141,25 @@
     "add":       "Add",
     "optional":  "Optional",
     "required":  "Required"
+  },
+  "map": {
+    "locate": "My location",
+    "locating": "Locating…",
+    "goToMe": "Go to my location",
+    "outside": "You're outside Dhaka — showing the Dhaka network.",
+    "denied": "Location permission denied — showing Dhaka. You can enable it in your browser settings.",
+    "insecure": "Location needs HTTPS (or localhost).",
+    "unavailable": "Couldn't get your location — showing Dhaka.",
+    "tilesDown": "Map tiles unavailable — showing schematic view.",
+    "youAreHere": "You are here",
+    "layers": "Layers",
+    "sample": "Sample data (backend offline)",
+    "nearest": "Nearest hub",
+    "useAsFrom": "Use as From",
+    "closed": "Closed",
+    "layerHubs": "Hubs",
+    "layerTransit": "Transit lines",
+    "layerAlerts": "Alerts",
+    "layerClosed": "Closed roads"
   }
 }
