@@ -29,7 +29,8 @@ services:
   - type: web
     name: dhakapath-backend
     runtime: python
-    plan: free
+    # plan: free is no longer available for web services on Render (retired 2024)
+    # You will be prompted to choose a plan (Starter = $7/mo) during Blueprint setup
     rootDir: backend
     buildCommand: pip install -r requirements.txt
     startCommand: bash render_start.sh
@@ -106,7 +107,7 @@ services:
   - type: web
     name: dhakapath-frontend
     runtime: static
-    plan: free
+    # Static sites on Render are always free — no plan field needed
     rootDir: frontend
     buildCommand: npm ci && npm run build
     staticPublishPath: ./dist
