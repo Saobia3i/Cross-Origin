@@ -1,5 +1,6 @@
 import type { LatLngTuple } from 'leaflet';
 import { MRT_STATIONS } from './geo';
+import { APPROX_HUB_COORDS } from './hubs';
 import type { MapAlert, MapEdge, MapHub, MapLeg, MapRoute, TransitMode } from './types';
 
 /**
@@ -27,11 +28,14 @@ export function toMapHubs(raw: unknown): MapHub[] {
   return unwrapList(raw, 'hubs').flatMap((r): MapHub[] => {
     if (!isRec(r)) return [];
     const id = str(r.hub_id) ?? str(r.id);
-    const lat = num(r.lat) ?? num(r.latitude);
-    const lng = num(r.lng) ?? num(r.longitude);
+    let lat = num(r.lat) ?? num(r.latitude);
+    let lng = num(r.lng) ?? num(r.longitude);
+    let approx = false;
+    const fallback = id ? APPROX_HUB_COORDS[id] : undefined;
+    if ((lat === undefined || lng === undefined) && fallback) { [lat, lng] = fallback; approx = true; }
     if (!id || lat === undefined || lng === undefined) return [];     // never draw what we can't place
     return [{
-      id, lat, lng,
+      id, lat, lng, approx,
       name: str(r.name) ?? id,
       nameBn: str(r.name_bn),
       type: str(r.type) ?? 'hub',

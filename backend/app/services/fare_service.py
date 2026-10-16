@@ -335,6 +335,8 @@ def calculate_rideshare_split(total_fare: FareRange, participants: int) -> RideS
 
 
 # ----------------------------------------------------------------------------- sanity check
+SANITY_ABSOLUTE_MAX_BDT = 3000.0
+
 def validate_submitted_fare(session: Session, mode: str, submitted_fare_bdt: float, distance_km: float | None,
                             scenario: str = "normal", origin_hub_id: str | None = None,
                             destination_hub_id: str | None = None) -> FareSanityResult:
@@ -365,6 +367,10 @@ def validate_submitted_fare(session: Session, mode: str, submitted_fare_bdt: flo
                 return result
         result.reasons.append("Metro stations unknown or not in the official matrix; could not verify.")
         return result
+    if submitted_fare_bdt > SANITY_ABSOLUTE_MAX_BDT:  # no distance needed: no single Dhaka city ride costs this much
+        result.checked = True
+        return flag(f"Submitted {submitted_fare_bdt:g} BDT is above the {SANITY_ABSOLUTE_MAX_BDT:g} BDT ceiling for a "
+                    f"single city ride.")
     if distance_km is None:
         result.reasons.append("Distance unknown; could not verify (DISTANCE_UNKNOWN).")
         return result

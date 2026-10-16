@@ -28,7 +28,7 @@ def test_catalog():
 
 
 def test_not_implemented_placeholder():
-    r = client.get("/api/admin/fare-rules")
+    r = client.post("/api/admin/hubs", json={})
     assert r.status_code == 501
     body = r.json()
     _assert_envelope(body)

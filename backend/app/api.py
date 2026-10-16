@@ -5,6 +5,7 @@ from fastapi import APIRouter, Depends, Query, Request
 from sqlmodel import Session
 
 from app.api_catalog import API_CATALOG
+from app.api_admin import router as admin_router
 from app.api_auth import router as auth_router
 from app.api_chat import router as chat_router
 from app.api_grounding import router as grounding_router
@@ -30,6 +31,7 @@ router.include_router(grounding_router)
 router.include_router(chat_router)
 router.include_router(simulations_router)
 router.include_router(rideshare_router)
+router.include_router(admin_router)
 
 SEARCH_FIELDS = ("origin", "destination", "budget_bdt", "strict_budget", "prefer_student_fare", "avoid_hubs",
                  "avoid_modes", "optimize", "scenario")

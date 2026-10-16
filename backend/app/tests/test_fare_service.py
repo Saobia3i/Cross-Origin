@@ -360,12 +360,17 @@ def test_sanity_metro_compares_with_official_matrix(db):
 
 
 def test_sanity_cannot_check_without_data_does_not_flag(db):
-    unknown_distance = fs.validate_submitted_fare(db, "rickshaw", 5000, None)
+    unknown_distance = fs.validate_submitted_fare(db, "rickshaw", 500, None)
     assert not unknown_distance.checked and unknown_distance.is_realistic and not unknown_distance.needs_admin_review
     assert unknown_distance.reasons
     no_stations = fs.validate_submitted_fare(db, "mrt", 999, None)
     assert not no_stations.checked and not no_stations.needs_admin_review
 
+
+
+def test_sanity_flags_absurd_fare_even_without_distance(db):
+    r = fs.validate_submitted_fare(db, "rickshaw", 99999, None)
+    assert r.checked and not r.is_realistic and r.needs_admin_review and r.reasons
 
 # ---- schema / serialization --------------------------------------------------------------------
 def test_fare_range_schema_shape():

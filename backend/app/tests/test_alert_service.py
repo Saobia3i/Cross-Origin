@@ -195,7 +195,7 @@ def test_unrealistic_fare_surge_is_flagged_not_blocked(seeded):
 
 
 def test_fare_check_is_skipped_when_distance_is_unknown(seeded):
-    r = new_report(seeded, USER3, report_type="fare_surge", mode="rickshaw", fare_amount_bdt=5000, affected_route_ids=[],
+    r = new_report(seeded, USER3, report_type="fare_surge", mode="rickshaw", fare_amount_bdt=500, affected_route_ids=[],
                    affected_hub="FARMGATE", severity="light")
     assert "unrealistic_fare" not in r.raw_json["sanity_flags"]  # nothing to compare with; noted, not guessed
 

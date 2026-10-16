@@ -5,7 +5,7 @@
     "simulate": "Simulator",
     "network":  "Network",
     "chat":     "Assistant",
-    "admin":    "Admin"
+    "admin":    "Dashboard"
   },
   "auth": {
     "login":        "Log in",

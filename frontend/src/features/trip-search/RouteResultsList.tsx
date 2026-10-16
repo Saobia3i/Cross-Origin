@@ -48,7 +48,7 @@ const RouteCard: React.FC<{ route: RouteOption; selected: boolean; onClick: () =
           )}
         </Box>
         <Typography variant="body2" color="text.secondary" sx={{ fontFamily: 'var(--font-mono)' }}>
-          {route.total_duration_min == null ? 'Time unavailable' : t('trip.duration', { min: route.total_duration_min })}
+          {route.total_duration_min == null ? '— min' : t('trip.duration', { min: Math.round(route.total_duration_min) })}
         </Typography>
         <Typography variant="body2" color="text.secondary">
           {route.transfers === 0 ? 'Direct' : t('trip.transfers', { n: route.transfers, count: route.transfers })}

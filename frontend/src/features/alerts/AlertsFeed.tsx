@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import {
-  Box, Typography, Paper, Chip, Button,
-  LinearProgress,
+  Box, Typography, Paper, Chip, Button, LinearProgress,
 } from '@mui/material';
 import ThumbUp from '@mui/icons-material/ThumbUp';
 import ThumbDown from '@mui/icons-material/ThumbDown';

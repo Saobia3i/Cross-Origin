@@ -82,6 +82,7 @@ ERROR_STATUS = {
     "NOT_VERIFIED": 403,
     "ACCOUNT_DISABLED": 403,
     "FORBIDDEN": 403,
+    "USER_NOT_FOUND": 404,
     # reports, votes, drafts, events
     "REPORT_NOT_FOUND": 404,
     "DRAFT_NOT_FOUND": 404,

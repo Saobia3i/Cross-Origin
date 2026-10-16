@@ -1,20 +1,57 @@
 import React from 'react';
 import {
-  Box, Typography, Paper, Divider, Switch, FormControlLabel,
-  Chip,
+  Box, Typography, Paper, Divider, Switch, FormControlLabel, Chip, CircularProgress,
 } from '@mui/material';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import InfoIcon from '@mui/icons-material/Info';
 import { useTranslation } from 'react-i18next';
+import type { TFunction } from 'i18next';
 import { useTripStore } from '../../store/trip';
 import { ModePill } from '../../components/ModePill';
 import { FareText } from '../../components/FareText';
+import { useQuery } from '@tanstack/react-query';
+import { estimateFare } from '../../api/endpoints';
+
+interface FareEstimateLeg {
+  route_id: string;
+  regular_fare_min_bdt: number;
+  regular_fare_max_bdt: number;
+  student_fare_min_bdt: number;
+  student_fare_max_bdt: number;
+  fare_source?: string;
+}
+interface FareEstimate {
+  total_regular_fare_min_bdt: number;
+  total_regular_fare_max_bdt: number;
+  total_student_fare_min_bdt: number;
+  total_student_fare_max_bdt: number;
+  legs: FareEstimateLeg[];
+  warnings: string[];
+}
+
+const minutes = (t: TFunction, n?: number | null) =>
+  n == null ? '— min' : t('trip.duration', { min: Math.round(n) });
 
 const RouteDetail: React.FC = () => {
   const { t } = useTranslation();
   const { selectedRoute, studentMode, setSearch } = useTripStore();
 
+  // Cost estimate from the backend fare engine (POST /api/fares/estimate) for the selected option.
+  const routeKey = selectedRoute?.legs.map((l) => l.route_id).join('|') ?? '';
+  const { data: estimate, isFetching: estimating, error: estimateError } = useQuery<FareEstimate>({
+    queryKey: ['fare-estimate', selectedRoute?.route_option_id, routeKey, studentMode],
+    queryFn: () => estimateFare(selectedRoute!.route_option_id, studentMode),
+    enabled: !!selectedRoute,
+    staleTime: 0,
+  });
+
   if (!selectedRoute) return null;
+
+  const legFare = (i: number, routeId: string) => {
+    const e = estimate?.legs[i];
+    return e && e.route_id === routeId ? e : null;
+  };
+  const total = estimate ?? selectedRoute;
 
   return (
     <Paper elevation={0} sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 2, p: 2.5 }}>
@@ -35,8 +72,9 @@ const RouteDetail: React.FC = () => {
       {/* Leg timeline */}
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
         {selectedRoute.legs.map((leg, i) => {
-          const fmin = studentMode ? leg.student_fare_min_bdt : leg.regular_fare_min_bdt;
-          const fmax = studentMode ? leg.student_fare_max_bdt : leg.regular_fare_max_bdt;
+          const f = legFare(i, leg.route_id) ?? leg;
+          const fmin = studentMode ? f.student_fare_min_bdt : f.regular_fare_min_bdt;
+          const fmax = studentMode ? f.student_fare_max_bdt : f.regular_fare_max_bdt;
           return (
             <Box key={i}>
               <Box sx={{ display: 'flex', gap: 2, py: 1.5 }}>
@@ -59,7 +97,7 @@ const RouteDetail: React.FC = () => {
                   <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
                     <FareText min={fmin} max={fmax} size="sm" />
                     <Typography variant="caption" color="text.secondary" sx={{ fontFamily: 'var(--font-mono)' }}>
-                      {t('trip.duration', { min: leg.travel_time_min })}
+                      {minutes(t, leg.travel_time_min)}
                     </Typography>
                     {studentMode && leg.student_discount_applies && (
                       <Chip label={t('fare.student')} size="small" sx={{ height: 18, fontSize: '0.6rem', backgroundColor: '#FEF3C7', color: '#B45309' }} />
@@ -82,14 +120,28 @@ const RouteDetail: React.FC = () => {
       {/* Fare summary */}
       <Divider sx={{ my: 2 }} />
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <Typography sx={{ fontWeight: 600 }}>{t('fare.total')}</Typography>
-        <FareText
-          min={studentMode ? selectedRoute.total_student_fare_min_bdt : selectedRoute.total_regular_fare_min_bdt}
-          max={studentMode ? selectedRoute.total_student_fare_max_bdt : selectedRoute.total_regular_fare_max_bdt}
-          size="lg" sx={{ color: 'primary.main' }}
-        />
+        <Box>
+          <Typography sx={{ fontWeight: 600 }}>{t('fare.total')}</Typography>
+          <Typography variant="caption" color="text.secondary">
+            {studentMode ? t('fare.student') : t('fare.regular')}
+            {estimate ? ' · fare engine estimate' : ''}
+          </Typography>
+        </Box>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          {estimating && <CircularProgress size={14} />}
+          <FareText
+            min={studentMode ? total.total_student_fare_min_bdt : total.total_regular_fare_min_bdt}
+            max={studentMode ? total.total_student_fare_max_bdt : total.total_regular_fare_max_bdt}
+            size="lg" sx={{ color: 'primary.main' }}
+          />
+        </Box>
       </Box>
-      {selectedRoute.warnings.map((w, i) => (
+      {estimateError && (
+        <Typography variant="caption" color="error.main" sx={{ display: 'block', mt: 1 }}>
+          {(estimateError as Error).message}
+        </Typography>
+      )}
+      {Array.from(new Set([...(estimate?.warnings ?? []), ...selectedRoute.warnings])).map((w, i) => (
         <Typography key={i} variant="caption" color="text.secondary" sx={{ display: 'block', mt: 1 }}>{w}</Typography>
       ))}
     </Paper>

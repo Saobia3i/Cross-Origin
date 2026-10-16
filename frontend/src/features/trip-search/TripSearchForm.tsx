@@ -7,22 +7,23 @@ import SearchIcon from '@mui/icons-material/Search';
 import MyLocationIcon from '@mui/icons-material/MyLocation';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import { useTranslation } from 'react-i18next';
-import { useTripStore } from '../../store/trip';
+import { useTripStore, type SortBy } from '../../store/trip';
 import { useQuery } from '@tanstack/react-query';
 import { searchTrips, fetchNetwork } from '../../api/endpoints';
 import type { ApiError } from '../../api/client';
+import { hubOptions } from '../map/hubs';
 
 const TripSearchForm: React.FC = () => {
   const { t } = useTranslation();
-  const { origin, destination, budget, studentMode, avoidHubs, sortBy,
+  const { origin, destination, budget, studentMode, avoidHubs, sortBy, results,
           setSearch, setResults, setSortBy } = useTripStore();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   // Hub names come from the backend network (no hardcoded Dhaka data).
   const { data: network } = useQuery({ queryKey: ['network'], queryFn: fetchNetwork });
-  const HUBS = (network?.hubs ?? []).map((h) => h.name);
+  const HUBS = hubOptions(network?.hubs);
 
-  const handleSearch = async () => {
+  const handleSearch = async (optimize: SortBy = sortBy) => {
     if (!origin || !destination) return;
     setLoading(true);
     setError('');
@@ -32,7 +33,7 @@ const TripSearchForm: React.FC = () => {
         budget_bdt: budget ?? undefined,
         prefer_student_fare: studentMode,
         avoid_hubs: avoidHubs,
-        optimize: sortBy,
+        optimize,
       });
       setResults(data.routes ?? []);
       if (!data.routes?.length) {
@@ -56,7 +57,7 @@ const TripSearchForm: React.FC = () => {
       </Typography>
 
       <Autocomplete
-        freeSolo options={HUBS} value={origin}
+        freeSolo options={HUBS} groupBy={(o) => o.group} getOptionLabel={(o) => (typeof o === 'string' ? o : o.name)} value={origin}
         onInputChange={(_, v) => setSearch({ origin: v })}
         renderInput={(params) => (
           <TextField {...params} label={t('trip.from')} size="small"
@@ -66,7 +67,7 @@ const TripSearchForm: React.FC = () => {
       />
 
       <Autocomplete
-        freeSolo options={HUBS} value={destination}
+        freeSolo options={HUBS} groupBy={(o) => o.group} getOptionLabel={(o) => (typeof o === 'string' ? o : o.name)} value={destination}
         onInputChange={(_, v) => setSearch({ destination: v })}
         renderInput={(params) => (
           <TextField {...params} label={t('trip.to')} size="small" />
@@ -99,7 +100,7 @@ const TripSearchForm: React.FC = () => {
         {(['cheapest', 'fastest', 'fewest_transfers'] as const).map((s) => (
           <Chip
             key={s} label={t(`trip.${s === 'fewest_transfers' ? 'fewest' : s}`)} size="small"
-            onClick={() => setSortBy(s)}
+            onClick={() => { setSortBy(s); if (results.length > 0) handleSearch(s); }}
             variant={sortBy === s ? 'filled' : 'outlined'}
             color={sortBy === s ? 'primary' : 'default'}
             icon={<TrendingUpIcon sx={{ fontSize: '14px !important' }} />}
@@ -110,7 +111,7 @@ const TripSearchForm: React.FC = () => {
       {error && <Typography color="error.main" variant="caption">{error}</Typography>}
 
       <Button
-        variant="contained" fullWidth onClick={handleSearch} disabled={loading || !origin || !destination}
+        variant="contained" fullWidth onClick={() => handleSearch()} disabled={loading || !origin || !destination}
         startIcon={<SearchIcon />}
         sx={{ height: 44 }}
       >
