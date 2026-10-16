@@ -5,7 +5,12 @@ from fastapi import APIRouter, Depends, Query, Request
 from sqlmodel import Session
 
 from app.api_catalog import API_CATALOG
+from app.api_auth import router as auth_router
+from app.api_chat import router as chat_router
+from app.api_grounding import router as grounding_router
 from app.api_reports import router as reports_router
+from app.api_rideshare import router as rideshare_router
+from app.api_simulations import router as simulations_router
 from app.deps import get_db
 from app.enums import RouteEdgeStatus, TransitMode
 from app.models import RouteEdge
@@ -15,11 +20,16 @@ from app.schemas import (
 )
 from app.services import fare_service as fs
 from app.services import routing_service as rs
-from app.services import search_cache, transit_service
+from app.services import grounding_service, search_cache, transit_service
 from app.services.fare_service import FareError
 
 router = APIRouter()
+router.include_router(auth_router)
 router.include_router(reports_router)
+router.include_router(grounding_router)
+router.include_router(chat_router)
+router.include_router(simulations_router)
+router.include_router(rideshare_router)
 
 SEARCH_FIELDS = ("origin", "destination", "budget_bdt", "strict_budget", "prefer_student_fare", "avoid_hubs",
                  "avoid_modes", "optimize", "scenario")
@@ -132,7 +142,12 @@ def trips_search(body: TripSearchRequest, db: Session = Depends(get_db)):
         message, field = err.pop("message"), err.pop("field", None)
         raise api_error({"SCENARIO_UNKNOWN": "INVALID_SCENARIO"}.get(code, code), message, field=field, details=err)
 
+    grounding = grounding_service.validate_search_result(db, result, scenario, req.session_id)  # drops ungrounded options
+    if grounding["options_dropped"]:
+        result["warnings"].append(f"GROUNDING_FAILED: {grounding['options_dropped']} route option(s) failed grounding and were removed.")
     search_cache.remember_options(req.session_id, result["routes"])
+    search_cache.remember_query(req.session_id, {"origin": result["origin"]["hub_id"], "destination": result["destination"]["hub_id"],
+                                                 "prefer_student_fare": req.prefer_student_fare})
     sim, effects = rs.load_active_simulation(db, req.session_id)
     echo = req.model_dump(exclude_none=True)
     echo["parsed_from_text"] = not structured
@@ -146,7 +161,7 @@ def trips_search(body: TripSearchRequest, db: Session = Depends(get_db)):
             created_at=sim.created_at, expires_at=sim.expires_at) if sim else None),
         origin=result["origin"], destination=result["destination"], optimize=result["optimize"],
         scenario=result["scenario"], disruptions=result["disruptions"], warnings=result["warnings"],
-        warning_codes=result["warning_codes"])
+        warning_codes=result["warning_codes"], grounding=grounding)
     return success(data.model_dump(mode="json"))
 
 

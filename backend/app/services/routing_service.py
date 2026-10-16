@@ -138,25 +138,17 @@ def _norm_scenario_effects(effects: dict) -> dict:
     return out
 
 
-def effects_for_scenario_type(scenario_type: str) -> dict:
-    """Dataset-backed default effects for a simulation scenario type (config: routing_config.json)."""
-    return dict(CONFIG.get("scenario_type_effects", {}).get(scenario_type, {}))
-
-
 def load_active_simulation(session: Session, session_id: str | None, now: datetime | None = None
                            ) -> tuple[Simulation | None, dict]:
-    """The session's active, unexpired simulation and its effects (effects_json, else type defaults)."""
-    if not session_id:
+    """The session's active, unexpired simulation and its effects: those derived from its scenario_type
+    (simulation_service.get_scenario_effects), overridden by any explicit keys in effects_json."""
+    from app.services import simulation_service as sims
+
+    sim = sims.get_active_scenario(session, session_id, now)
+    if sim is None:
         return None, {}
-    now = now or utcnow()
-    sims = session.exec(select(Simulation).where(
-        Simulation.session_id == session_id, Simulation.status == SimulationStatus.active.value,
-    ).order_by(Simulation.created_at.desc(), Simulation.scenario_id)).all()
-    for sim in sims:
-        if sim.expires_at is None or sim.expires_at > now:
-            effects = sim.effects_json or effects_for_scenario_type(sim.scenario_type)
-            return sim, _norm_scenario_effects(effects)
-    return None, {}
+    derived = sims.graph_effects(sims.compute_effects(session, sim.scenario_type, sim.zone_hub))
+    return sim, _norm_scenario_effects({**derived, **(sim.effects_json or {})})
 
 
 def load_active_alerts(session: Session, now: datetime | None = None) -> list[Report]:
@@ -205,7 +197,9 @@ def _scenario_time(edge: RouteEdge, time_scenario: str, rates: dict[str, ModeRat
         return float(value), warnings
     if edge.time_normal_min is not None:
         if time_scenario != "normal":
-            warnings.append(f"TIME_NOT_SCENARIO_SPECIFIC: no dataset time for '{time_scenario}'; normal time used.")
+            code = {"rain": "TIME_RAIN_DATA_MISSING", "peak": "TIME_PEAK_DATA_MISSING",
+                    "detour": "TIME_DETOUR_DATA_MISSING"}.get(time_scenario, "TIME_NOT_SCENARIO_SPECIFIC")
+            warnings.append(f"{code}: no dataset '{time_scenario}' time for this route; normal time used.")
         return float(edge.time_normal_min), warnings
     rate = rates.get(edge.mode)
     if rate is not None and rate.average_speed_kmh:
@@ -260,7 +254,9 @@ def build_graph(session: Session, session_id: str | None = None, avoid_hubs: lis
             reason = f"admin: {edge.closed_reason or 'status closed'}"
         elif edge.route_id in alert_closed:
             reason = f"verified report(s) {', '.join(alert_closed[edge.route_id])}"
-        elif effects.get("close_zone_edges") and zone and zone in (edge.origin_hub, edge.destination_hub):
+        elif edge.route_id in effects.get("closed_route_ids", {}):
+            reason = f"simulation {sim.scenario_id}: {effects['closed_route_ids'][edge.route_id]}"
+        elif effects.get("close_zone_edges") and zone and edge.mode != WALK and zone in (edge.origin_hub, edge.destination_hub):
             reason = f"simulation {sim.scenario_id}: zone {zone} closed"
         elif effects.get("close_flood_prone") and edge.flood_prone and in_zone(edge):
             reason = f"simulation {sim.scenario_id}: flood-prone edge closed"

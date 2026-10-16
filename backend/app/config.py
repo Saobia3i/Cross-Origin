@@ -29,6 +29,13 @@ class Settings:
         self.gemini_api_key = os.getenv("GEMINI_API_KEY", "")
         self.groq_api_key = os.getenv("GROQ_API_KEY", "")
         self.llm_provider = os.getenv("LLM_PROVIDER", "openrouter")
+        # models are overridable; the defaults are free-tier models and may need updating
+        self.openrouter_model = os.getenv("OPENROUTER_MODEL", "meta-llama/llama-3.1-8b-instruct:free")
+        self.gemini_model = os.getenv("GEMINI_MODEL", "gemini-1.5-flash")
+        self.groq_model = os.getenv("GROQ_MODEL", "llama-3.1-8b-instant")
+        self.llm_timeout_s = float(os.getenv("LLM_TIMEOUT_S", "8"))
+        self.chat_llm_rewrite = _bool(os.getenv("CHAT_LLM_REWRITE", "true"))
+        self.chat_demo_simulation = _bool(os.getenv("CHAT_ALLOW_DEMO_SIMULATION", "true"))
         self.llm_cache_enabled = _bool(os.getenv("LLM_CACHE_ENABLED", "true"))
         self.upload_dir = os.getenv("UPLOAD_DIR", "./data/uploads")
         self.max_upload_images = int(os.getenv("MAX_UPLOAD_IMAGES", "5"))

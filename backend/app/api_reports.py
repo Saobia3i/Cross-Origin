@@ -222,7 +222,7 @@ def list_events(since_id: int = Query(0, ge=0), session_id: Optional[str] = Quer
     next_id = events[-1].event_id if events else since_id
     more = bool(events) and bool(event_service.get_events(db, next_id, session_id, 1, event_type.value if event_type else None))
     return success({"events": [EventOut.model_validate(e).model_dump(mode="json") for e in events],
-                    "next_since_id": next_id, "has_more": more})
+                    "latest_id": next_id, "next_since_id": next_id, "has_more": more})
 
 
 @router.post("/api/events/publish-debug")

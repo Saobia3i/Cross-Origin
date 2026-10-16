@@ -1,24 +1,33 @@
 {
   "_doc": "Routing engine configuration (app/services/routing_service.py). Nothing here is a transit fact: it states which interpretation rules to use when a dataset is silent. Change values here, not in code.",
-  "symmetric_sources": ["dhaka_transport_fares"],
+  "symmetric_sources": [
+    "dhaka_transport_fares"
+  ],
   "symmetric_sources_evidence": "Dhaka_Transport_Fares lists every unordered hub pair exactly once (105 pairs for 15 hubs, none repeated in the reverse direction) with one distance/time, and the metro matrix is symmetric, so those rows describe the pair, not one direction. Co-ordination segments carry no direction information, so they are traversed origin->destination only (with a warning).",
   "transfer_wait_min": 0,
   "transfer_wait_note": "No dataset provides transfer wait times; 0 is used. A session simulation may set effects.transfer_wait_min.",
   "road_distance_factor_source": "Section rule: road distance = straight-line km x 1.35 (see fare_service.ROAD_DISTANCE_FACTOR)",
-  "balanced_weights": {"fare": 0.4, "time": 0.4, "transfer": 0.2, "risk_per_point": 0.1},
+  "balanced_weights": {
+    "fare": 0.4,
+    "time": 0.4,
+    "transfer": 0.2,
+    "risk_per_point": 0.1
+  },
   "fewest_transfers_penalty": 1000,
   "min_routes": 3,
   "max_routes": 5,
   "max_alternate_attempts": 12,
-  "risk_levels": {"medium_from_points": 0.5, "high_from_points": 2},
-  "scenario_time_columns": {"normal": "time_normal_min", "rain": "time_rain_min", "peak": "time_peak_min"},
-  "scenario_type_effects": {
-    "heavy_rain": {"fare_scenario": "rain", "time_scenario": "rain"},
-    "peak_rush_hour": {"fare_scenario": "peak", "time_scenario": "peak"},
-    "detour": {"fare_scenario": "detour"},
-    "regular_holiday": {"fare_scenario": "regular_holiday"},
-    "festive_holiday": {"fare_scenario": "festive_holiday"},
-    "blocked_intersection": {"close_zone_edges": true}
+  "risk_levels": {
+    "medium_from_points": 0.5,
+    "high_from_points": 2
   },
-  "scenario_type_effects_note": "Defaults used when a simulation's effects_json is empty. Only dataset-backed effects: fare/time scenarios exist as dataset columns/rules. blocked_intersection closes edges touching the simulation's zone_hub."
+  "scenario_time_columns": {
+    "normal": "time_normal_min",
+    "rain": "time_rain_min",
+    "peak": "time_peak_min",
+    "detour": "time_detour_min"
+  },
+  "scenario_transfer_wait_min": {},
+  "scenario_transfer_wait_note": "Extra transfer wait per simulation scenario_type, in minutes. No dataset provides any, so it is empty (0).",
+  "simulation_ttl_min": 120
 }

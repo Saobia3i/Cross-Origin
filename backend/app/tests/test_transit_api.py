@@ -229,5 +229,5 @@ def test_catalog_marks_new_endpoints_implemented(client):
     for key in (("GET", "/api/transit/network"), ("GET", "/api/transit/hubs"), ("GET", "/api/transit/routes"),
                 ("GET", "/api/transit/hub-statuses"), ("POST", "/api/trips/search"), ("POST", "/api/fares/estimate")):
         assert eps[key]["implemented"] is True and eps[key]["auth"] == "public"
-    assert eps[("POST", "/api/chat")]["implemented"] is False
-    assert client.post("/api/chat", json={}).status_code == 501  # still a placeholder
+    assert eps[("GET", "/api/admin/fare-rules")]["implemented"] is False
+    assert client.get("/api/admin/fare-rules").status_code == 501  # still a placeholder

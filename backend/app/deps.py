@@ -3,6 +3,8 @@
 Tokens are minted by app.security.create_access_token (sub = user id). The user row is re-read on every
 request, so role / verification / disabled status always come from the database, not from the token.
 """
+import hmac
+
 import jwt
 from fastapi import Depends, Request
 from sqlmodel import Session
@@ -59,3 +61,11 @@ def get_current_admin(user: User = Depends(get_current_verified_user)) -> User:
     if user.role != UserRole.admin.value:
         raise api_error("FORBIDDEN", "Admin access required.")
     return user
+
+
+def check_demo_secret(supplied: str | None) -> None:
+    """Guard for demo/debug endpoints: DEMO_SECRET via header X-Demo-Secret (or a body secret field)."""
+    from app.config import settings
+
+    if not hmac.compare_digest((supplied or "").encode(), settings.demo_secret.encode()):
+        raise api_error("DEBUG_SECRET_INVALID", "Missing or wrong demo secret.")
