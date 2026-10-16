@@ -1,0 +1,125 @@
+/* ─────────────────────────────────────────────
+   DhakaPath · Road-Inspired Design Tokens
+   Palette: Asphalt Gray · Road-Yellow · White · Signal-Green
+   ───────────────────────────────────────────── */
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;600&family=Noto+Sans+Bengali:wght@400;500;600&display=swap');
+
+:root {
+  /* ── Light Mode ("Daytime Road") ── */
+
+  /* Backgrounds — asphalt & concrete grays */
+  --color-bg:           #CCCBC6;   /* asphalt road surface */
+  --color-surface:      #F2F0EA;   /* concrete slab / card */
+  --color-surface-2:    #E8E5DC;   /* slightly darker panel */
+  --color-line:         #B4B0A5;   /* road lane divider */
+
+  /* Primary — road marking yellow */
+  --color-primary:      #E6B800;   /* classic yellow road marking */
+  --color-primary-dark: #BF9A00;   /* pressed / hover state */
+  --color-primary-tint: #FFF8D6;   /* very light yellow for backgrounds */
+  --color-primary-on:   #1A1600;   /* text ON yellow button (near black) */
+
+  /* Accent — signal green */
+  --color-green:        #2E7D4F;   /* traffic green / go */
+  --color-green-light:  #D6EFDF;   /* green tint backgrounds */
+  --color-green-on:     #FFFFFF;
+
+  /* White — lane / panel */
+  --color-white:        #FFFFFF;
+  --color-white-muted:  #F5F3EE;
+
+  /* Text */
+  --color-text-primary:   #1A1A14;   /* near-black on concrete */
+  --color-text-secondary: #4A4840;   /* warm dark gray */
+  --color-text-muted:     #7A7668;   /* faded text */
+
+  /* Status */
+  --color-verified:   #2E7D4F;   /* green = go */
+  --color-pending:    #E6B800;   /* yellow = caution */
+  --color-downvoted:  #8A8680;
+  --color-blocked:    #C0392B;   /* red = stop */
+  --color-info:       #1A6FA8;
+
+  /* Transit mode colors */
+  --color-bus:      #1A6FA8;   /* blue bus */
+  --color-mrt:      #6B3FA0;   /* purple MRT */
+  --color-rickshaw: #E6B800;   /* yellow rickshaw */
+  --color-leguna:   #0D8A7A;   /* teal leguna */
+  --color-cng:      #2E7D4F;   /* green CNG */
+  --color-walk:     #7A7668;   /* gray walk */
+
+  /* Typography */
+  --font-heading: 'Space Grotesk', sans-serif;
+  --font-body:    'Inter', system-ui, sans-serif;
+  --font-mono:    'JetBrains Mono', monospace;
+  --font-bangla:  'Noto Sans Bengali', sans-serif;
+
+  /* Type scale */
+  --text-xs:   12px;
+  --text-sm:   14px;
+  --text-base: 16px;
+  --text-lg:   20px;
+  --text-xl:   24px;
+  --text-2xl:  32px;
+  --text-3xl:  40px;
+
+  /* Spacing */
+  --sp-1: 4px;  --sp-2: 8px;  --sp-3: 12px; --sp-4: 16px;
+  --sp-5: 20px; --sp-6: 24px; --sp-8: 32px; --sp-12: 48px;
+
+  /* Radius */
+  --radius-sm:   6px;
+  --radius-md:   8px;
+  --radius-lg:   12px;
+  --radius-xl:   16px;
+  --radius-full: 9999px;
+
+  /* Shadows — warm to match concrete */
+  --shadow-sm: 0 1px 3px 0 rgb(30 28 20 / 0.10);
+  --shadow-md: 0 4px 12px 0 rgb(30 28 20 / 0.14);
+  --shadow-lg: 0 8px 24px 0 rgb(30 28 20 / 0.18);
+
+  /* Layout */
+  --sidebar-w:   360px;
+  --chat-w:      340px;
+  --navbar-h:    56px;
+  --bottombar-h: 60px;
+
+  /* Transitions (color only — no motion) */
+  --tr: color 120ms ease, background-color 120ms ease, border-color 120ms ease;
+}
+
+/* ── Dark Mode ("Night Road") ── */
+[data-theme='dark'] {
+  --color-bg:             #1C1C18;   /* night asphalt */
+  --color-surface:        #28271F;   /* dark concrete */
+  --color-surface-2:      #333228;   /* panel */
+  --color-line:           #44433A;   /* faint lane line */
+
+  --color-primary:        #F0C800;   /* brighter yellow at night */
+  --color-primary-dark:   #C9A800;
+  --color-primary-tint:   #332B00;
+  --color-primary-on:     #1A1600;
+
+  --color-green:          #3DAE6A;
+  --color-green-light:    #1A3A28;
+  --color-green-on:       #FFFFFF;
+
+  --color-white:          #F5F3EE;
+  --color-white-muted:    #DEDBD2;
+
+  --color-text-primary:   #EDE9DA;
+  --color-text-secondary: #B0AC98;
+  --color-text-muted:     #726E5A;
+
+  --color-verified:   #3DAE6A;
+  --color-pending:    #F0C800;
+  --color-blocked:    #E55347;
+}
+
+/* ── Bangla font stack ── */
+[lang='bn'] {
+  --font-body:    'Noto Sans Bengali', 'Inter', sans-serif;
+  --font-heading: 'Noto Sans Bengali', 'Space Grotesk', sans-serif;
+  line-height: 1.75;
+}
