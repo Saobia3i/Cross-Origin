@@ -3,6 +3,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
@@ -34,6 +35,12 @@ app.add_middleware(
 )
 
 
+@app.get("/health", tags=["meta"])
+async def health():
+    """Render health-check endpoint."""
+    return JSONResponse({"ok": True, "service": "dhakapath-backend"})
+
+
 @app.exception_handler(ApiError)
 async def api_error_handler(request: Request, exc: ApiError):
     return error(exc.code, exc.message, exc.status_code, exc.field, exc.details)
@@ -59,3 +66,4 @@ app.include_router(router)
 # Public report photos: backend/data/uploads/reports/{report_id}/<file> -> /uploads/reports/{report_id}/<file>
 app.mount("/uploads/reports", StaticFiles(directory=str(alert_service.upload_root() / "reports"), check_dir=False),
           name="report-uploads")
+

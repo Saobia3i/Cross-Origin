@@ -11,6 +11,7 @@ import GridViewIcon from '@mui/icons-material/GridView';
 import DarkModeIcon from '@mui/icons-material/DarkMode';
 import LightModeIcon from '@mui/icons-material/LightMode';
 import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings';
+import GroupsIcon from '@mui/icons-material/Groups';
 import { useTranslation } from 'react-i18next';
 import { useQueryClient } from '@tanstack/react-query';
 import { useUIStore } from '../store/ui';
@@ -22,6 +23,7 @@ const NAV = [
   { key: 'alerts',   path: '/alerts',    Icon: NotificationsNoneIcon },
   { key: 'simulate', path: '/simulator', Icon: SearchIcon },
   { key: 'network',  path: '/network',   Icon: GridViewIcon },
+  { key: 'community', path: '/community', Icon: GroupsIcon },
 ];
 
 export const Navbar: React.FC = () => {
@@ -82,7 +84,7 @@ export const Navbar: React.FC = () => {
                   px: 1.5, py: 0.75,
                 }}
               >
-                {t(`nav.${key}`)}
+                {key === 'community' ? 'Community' : t(`nav.${key}`)}
               </Button>
             );
           })}

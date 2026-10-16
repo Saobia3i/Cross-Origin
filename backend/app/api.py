@@ -8,6 +8,7 @@ from app.api_catalog import API_CATALOG
 from app.api_admin import router as admin_router
 from app.api_auth import router as auth_router
 from app.api_chat import router as chat_router
+from app.api_digitization import router as digitization_router
 from app.api_grounding import router as grounding_router
 from app.api_reports import router as reports_router
 from app.api_rideshare import router as rideshare_router
@@ -29,6 +30,7 @@ router.include_router(auth_router)
 router.include_router(reports_router)
 router.include_router(grounding_router)
 router.include_router(chat_router)
+router.include_router(digitization_router)
 router.include_router(simulations_router)
 router.include_router(rideshare_router)
 router.include_router(admin_router)

@@ -20,6 +20,7 @@ import NetworkPage    from '../pages/NetworkPage';
 import AdminPage      from '../pages/AdminPage';
 import { LoginPage, RegisterPage } from '../pages/AuthPages';
 import ReportForm     from '../features/reports/ReportForm';
+import CommunityPage  from '../pages/CommunityPage';
 
 // Styles
 import '../styles/global.css';
@@ -68,6 +69,7 @@ const AppInner: React.FC = () => {
           <Route path="/simulator" element={<Layout><SimulatorPage /></Layout>} />
           <Route path="/network"   element={<Layout><NetworkPage /></Layout>} />
           <Route path="/report"    element={<Layout><div style={{maxWidth:520,margin:'24px auto'}}><ReportForm /></div></Layout>} />
+          <Route path="/community" element={<Layout><CommunityPage /></Layout>} />
           <Route path="/admin"     element={<Layout><AdminPage /></Layout>} />
           <Route path="*"          element={<Navigate to="/" replace />} />
         </Routes>

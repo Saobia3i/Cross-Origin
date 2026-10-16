@@ -135,3 +135,29 @@ export const adminBlockRoute = (routeId: string, reason?: string) =>
   apiClient.post(`/api/admin/routes/${encodeURIComponent(routeId)}/block`, { reason }).then(r => r.data);
 export const adminUnblockRoute = (routeId: string) =>
   apiClient.post(`/api/admin/routes/${encodeURIComponent(routeId)}/unblock`).then(r => r.data);
+
+// â”€â”€ Community tools â”€â”€
+export interface DigitizedRouteDraft {
+  source: string; document_type: string; route_name: string; operator: string; mode: string;
+  origin: string; destination: string; stops: string[]; fare_rows: Array<{ from: string; to: string; fare_bdt: number | null }>;
+  raw_text: string; confidence: number; review_note: string;
+}
+export const digitizeSignboard = (image: File) => {
+  const form = new FormData();
+  form.append('image', image);
+  return apiClient.post<DigitizedRouteDraft>('/api/digitize/signboard', form, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  }).then(r => r.data);
+};
+
+export interface RideSharePost {
+  post_id: string; mode: string; origin_hub?: string | null; destination_hub?: string | null; hub_id?: string | null;
+  seats_total: number; seats_taken: number; seats_remaining: number; status: string; notes?: string | null;
+  per_person_min_bdt?: number | null; per_person_max_bdt?: number | null; suggested_safe_per_person_bdt?: number | null;
+  created_by: { name: string }; my_participation: boolean; expires_at?: string | null;
+}
+export interface RideShareInput { mode: string; origin_hub: string; destination_hub?: string; seats_total: number; notes?: string; expires_in_minutes: number; }
+export const fetchRideSharePosts = (hub?: string) => apiClient.get<{ posts: RideSharePost[]; count: number }>('/api/rideshare/posts', { params: hub ? { hub_id: hub } : undefined }).then(r => r.data);
+export const createRideSharePost = (input: RideShareInput) => apiClient.post<RideSharePost>('/api/rideshare/posts', input).then(r => r.data);
+export const joinRideSharePost = (id: string) => apiClient.post<RideSharePost>(`/api/rideshare/posts/${id}/join`).then(r => r.data);
+export const leaveRideSharePost = (id: string) => apiClient.post<RideSharePost>(`/api/rideshare/posts/${id}/leave`).then(r => r.data);
