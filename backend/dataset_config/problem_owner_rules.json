@@ -1,0 +1,57 @@
+{
+  "_provenance": "Transcribed verbatim from the DhakaPath problem owner's brief (backend task prompt, 2026-10-16). Used as the fallback for any Section-rules section that no dataset file provides, and to cross-check a Section-rules file when one is present. Text lines are parsed by app/services/dataset_normalizer.py exactly like a rules file.",
+  "metro_stations": [
+    "Uttara North", "Pallabi", "Mirpur 11", "Mirpur 10", "Kazipara",
+    "Agargaon", "Farmgate", "Shahbagh", "Dhaka Univ.", "Motijheel"
+  ],
+  "hub_wealth_index": [
+    "Motijheel: 1.05",
+    "Banasree: 1",
+    "Malibagh: 0.95",
+    "Shahbagh: 1",
+    "Farmgate: 1",
+    "Science Lab: 1.05",
+    "Dhanmondi: 1.1",
+    "Mohammadpur: 1",
+    "Mirpur: 0.95",
+    "Agargaon: 1",
+    "Mohakhali: 1.1",
+    "Badda: 1.05",
+    "Uttara: 1.1",
+    "Jatrabari: 0.9",
+    "Gabtoli: 0.9"
+  ],
+  "mode_rates": [
+    "Rickshaw: base 15 + 25/km, min 30, 9 km/h, low/high band x0.85/1.25",
+    "CNG Auto-rickshaw: base 30 + 38/km, min 70, 22 km/h, low/high band x0.9/1.25",
+    "Car (Taxi / hired car): base 80 + 50/km, min 200, 20 km/h, low/high band x0.85/1.3",
+    "Motorbike (informal ride): base 20 + 15/km, min 50, 25 km/h, low/high band x0.85/1.3",
+    "Pathao Bike: base 25 + 17/km, min 50, 25 km/h, low/high band x0.93/1.12",
+    "Pathao Car: base 50 + 30/km, min 120, 20 km/h, low/high band x0.93/1.12",
+    "Uber Car: base 60 + 32/km, min 130, 20 km/h, low/high band x0.93/1.12",
+    "Uber Moto: base 25 + 16/km, min 50, 25 km/h, low/high band x0.93/1.12",
+    "Local Bus: base 0 + 2.45/km, min 10, 14 km/h, low/high band x1/1"
+  ],
+  "multipliers": [
+    "Rickshaw: rain x1.6, peak x1.25, detour x1.5, regular holiday x0.95, festive x1.5",
+    "CNG Auto-rickshaw: rain x1.5, peak x1.3, detour x1.4, regular holiday x0.9, festive x1.4",
+    "Car: rain x1.3, peak x1.3, detour x1.35, regular holiday x0.9, festive x1.35",
+    "Motorbike: rain x1.4, peak x1.2, detour x1.3, regular holiday x0.9, festive x1.3",
+    "Pathao Bike: rain x1.7, peak x1.5, detour x1.45, regular holiday x0.85, festive x1.4",
+    "Pathao Car: rain x1.6, peak x1.6, detour x1.45, regular holiday x0.85, festive x1.4",
+    "Uber Car: rain x1.7, peak x1.6, detour x1.45, regular holiday x0.85, festive x1.4",
+    "Uber Moto: rain x1.7, peak x1.5, detour x1.45, regular holiday x0.85, festive x1.4",
+    "Local Bus: rain x1.0, peak x1.0, detour x1.15, regular holiday x0.95, festive x1.1"
+  ],
+  "rules": [
+    "Road distance = straight-line km x 1.35",
+    "Peak hours = 8-10am and 5-8pm weekdays",
+    "Rain = heavy rain / waterlogging",
+    "Detour = blocked road, construction or waterlogging forcing longer route, about +35% distance plus refusal premium",
+    "Regular holiday = normal weekends/govt holidays, lower demand",
+    "Festive holiday = Eid, Pohela Boishakh, Durga Puja, Victory Day, medium-high",
+    "Student = 50% off bus only, min Tk 10",
+    "Metro = official fare matrix; unaffected by weather/blockage",
+    "Non-metro prices are estimates for planning/demo, not official tariffs"
+  ]
+}

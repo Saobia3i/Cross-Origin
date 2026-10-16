@@ -1,0 +1,34 @@
+{
+  "_doc": "How to read backend/co-ordination/. Written from `python -m app.scripts.inspect_datasets` output (see data/generated/dataset_manifest.json). The four official CSVs have NO header row; each row is: <layer>, x1, y1, x2, y2, ..., <trailing fields>. Layers are keyed by the first column so files can be renamed safely. A coordination_mapping.json placed inside a co-ordination folder overrides keys here (used by test fixtures).",
+  "coordinate_order": "lon_lat",
+  "coordinate_order_evidence": "first value of every pair is 90.3-90.6 (> 90, so it cannot be a latitude); second is 23.7-23.9",
+  "junction_tolerance_m": 15,
+  "coordinate_cluster_radius_m": 300,
+  "combined_stop_name_separators": ["."],
+  "layers": {
+    "DhakaStreet": {
+      "role": "road_network",
+      "trailing_numeric_fields": ["attr_flag_raw", "attr_cost_raw"],
+      "notes": "Road centre-line segments. attr_flag_raw is 0 on every row (meaning unknown, possibly a one-way flag). attr_cost_raw is ~2.40 x the geometry length in km (p05 2.39, p95 2.52), which matches travel minutes at ~25 km/h, but this is UNCONFIRMED, so it is kept raw and not used as a time."
+    },
+    "DhakaBusBikolpo": {
+      "role": "transit_route", "mode": "bus", "mode_code": "LOCAL_BUS",
+      "line_name": "Bikolpo Bus", "provider": null,
+      "trailing_text_fields": ["from_stop", "to_stop"],
+      "evidence": "layer name DhakaBusBikolpo, file Routemap-BikolpoBus.csv; line name inferred from those, provider not stated"
+    },
+    "DhakaBusUttara": {
+      "role": "transit_route", "mode": "bus", "mode_code": "LOCAL_BUS",
+      "line_name": "Uttara Bus", "provider": null,
+      "trailing_text_fields": ["from_stop", "to_stop"],
+      "evidence": "layer name DhakaBusUttara, file Routemap-UttaraBus.csv; line name inferred from those, provider not stated"
+    },
+    "DhakaMetroRail": {
+      "role": "transit_route", "mode": "metro", "mode_code": "MRT6",
+      "line_name": "Dhaka Metro Rail", "provider": null,
+      "trailing_text_fields": ["from_stop", "to_stop"],
+      "evidence": "layer name DhakaMetroRail; MRT6 code follows the project brief route_id example"
+    }
+  },
+  "column_synonyms": {}
+}
