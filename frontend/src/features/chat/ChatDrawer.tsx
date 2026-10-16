@@ -3,7 +3,9 @@ import {
   Box, TextField, IconButton, Typography, Paper, Button,
   Divider, Drawer,
 } from '@mui/material';
-import { Send, Close, Shield } from '@mui/icons-material';
+import SendIcon from '@mui/icons-material/Send';
+import CloseIcon from '@mui/icons-material/Close';
+import ShieldIcon from '@mui/icons-material/Shield';
 import { useTranslation } from 'react-i18next';
 import { useChatStore } from '../../store/chat';
 import { useUIStore } from '../../store/ui';
@@ -95,13 +97,13 @@ const ChatPanel: React.FC = () => {
     <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
       {/* Header */}
       <Box sx={{ p: 2, borderBottom: '1px solid', borderColor: 'divider', display: 'flex', alignItems: 'center', gap: 1.5 }}>
-        <Box sx={{ width: 36, height: 36, borderRadius: 1.5, background: 'linear-gradient(135deg,#0891B2,#155E75)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18 }}>🤖</Box>
+        <Box sx={{ width: 36, height: 36, borderRadius: 1, background: '#E6B800', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, border: '2px solid #BF9A00' }}>🤖</Box>
         <Box>
           <Typography variant="subtitle2" fontWeight={700} sx={{ fontFamily: 'var(--font-heading)' }}>
             {t('chat.title')}
           </Typography>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-            <Shield sx={{ fontSize: 12, color: 'success.main' }} />
+            <ShieldIcon sx={{ fontSize: 12, color: 'success.main' }} />
             <Typography variant="caption" color="success.main">{t('chat.grounded')}</Typography>
           </Box>
         </Box>
@@ -151,8 +153,8 @@ const ChatPanel: React.FC = () => {
           maxRows={3}
         />
         <IconButton onClick={handleSend} disabled={!input.trim() || isThinking}
-          sx={{ backgroundColor: 'primary.main', color: '#fff', borderRadius: 1.5, width: 40, height: 40, flexShrink: 0, '&:hover': { backgroundColor: 'primary.dark' }, '&:disabled': { backgroundColor: 'divider' } }}>
-          <Send fontSize="small" />
+          sx={{ backgroundColor: 'primary.main', color: '#1A1600', borderRadius: 1.5, width: 40, height: 40, flexShrink: 0, '&:hover': { backgroundColor: 'primary.dark' }, '&:disabled': { backgroundColor: 'divider' } }}>
+          <SendIcon fontSize="small" />
         </IconButton>
       </Box>
     </Box>
@@ -170,7 +172,7 @@ const ChatDrawer: React.FC = () => {
       PaperProps={{ sx: { width: { xs: '100vw', sm: 380 }, height: '100%' } }}
     >
       <Box sx={{ display: 'flex', justifyContent: 'flex-end', p: 1 }}>
-        <IconButton onClick={toggleChat} size="small"><Close /></IconButton>
+        <IconButton onClick={toggleChat} size="small"><CloseIcon /></IconButton>
       </Box>
       <Box sx={{ flex: 1, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
         <ChatPanel />

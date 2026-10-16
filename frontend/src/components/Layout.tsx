@@ -1,6 +1,10 @@
 import React from 'react';
 import { Box, BottomNavigation, BottomNavigationAction, Paper } from '@mui/material';
-import { Map, NotificationsNone, Search, Chat, GridView } from '@mui/icons-material';
+import MapIcon from '@mui/icons-material/Map';
+import NotificationsNoneIcon from '@mui/icons-material/NotificationsNone';
+import SearchIcon from '@mui/icons-material/Search';
+import ChatIcon from '@mui/icons-material/Chat';
+import GridViewIcon from '@mui/icons-material/GridView';
 import { Link, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Navbar } from './Navbar';
@@ -12,11 +16,11 @@ interface Props {
 }
 
 const BOTTOM_TABS = [
-  { key: 'plan',     path: '/',          Icon: Map },
-  { key: 'alerts',   path: '/alerts',    Icon: NotificationsNone },
-  { key: 'simulate', path: '/simulator', Icon: Search },
-  { key: 'network',  path: '/network',   Icon: GridView },
-  { key: 'chat',     path: null,         Icon: Chat },
+  { key: 'plan',     path: '/',          Icon: MapIcon },
+  { key: 'alerts',   path: '/alerts',    Icon: NotificationsNoneIcon },
+  { key: 'simulate', path: '/simulator', Icon: SearchIcon },
+  { key: 'network',  path: '/network',   Icon: GridViewIcon },
+  { key: 'chat',     path: null,         Icon: ChatIcon },
 ];
 
 export const Layout: React.FC<Props> = ({ children }) => {

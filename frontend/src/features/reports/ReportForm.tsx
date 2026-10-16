@@ -3,7 +3,9 @@ import {
   Box, Typography, Paper, TextField, Button, MenuItem,
   Chip, IconButton, Grid,
 } from '@mui/material';
-import { CloudUpload, Close, Report } from '@mui/icons-material';
+import CloudUploadIcon from '@mui/icons-material/CloudUpload';
+import CloseIcon from '@mui/icons-material/Close';
+import ReportIcon from '@mui/icons-material/Report';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -92,7 +94,7 @@ const ReportForm: React.FC = () => {
   return (
     <Paper elevation={0} sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 2, p: 2.5 }}>
       <Typography variant="h6" sx={{ fontFamily: 'var(--font-heading)', fontWeight: 700, mb: 2.5, display: 'flex', alignItems: 'center', gap: 1 }}>
-        <Report sx={{ color: 'error.main' }} /> {t('alert.report')}
+        <ReportIcon sx={{ color: 'error.main' }} /> {t('alert.report')}
       </Typography>
 
       <Box component="form" onSubmit={handleSubmit(onSubmit)} sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
@@ -145,7 +147,7 @@ const ReportForm: React.FC = () => {
               transition: 'var(--tr)',
             }}
           >
-            <CloudUpload sx={{ color: 'text.muted', mb: 0.5 }} />
+            <CloudUploadIcon sx={{ color: 'text.muted', mb: 0.5 }} />
             <Typography variant="body2" color="text.secondary">Click or drag photos here</Typography>
           </Box>
           <input ref={fileRef} type="file" accept="image/*" multiple hidden
@@ -160,7 +162,7 @@ const ReportForm: React.FC = () => {
                   <IconButton size="small"
                     onClick={() => setImages(prev => prev.filter((_, j) => j !== i))}
                     sx={{ position: 'absolute', top: -6, right: -6, width: 18, height: 18, backgroundColor: 'error.main', color: '#fff', '&:hover': { backgroundColor: 'error.dark' } }}>
-                    <Close sx={{ fontSize: 10 }} />
+                    <CloseIcon sx={{ fontSize: 10 }} />
                   </IconButton>
                 </Box>
               ))}

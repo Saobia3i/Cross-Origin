@@ -3,7 +3,8 @@ import {
   Box, Typography, Paper, Divider, Switch, FormControlLabel,
   Table, TableBody, TableCell, TableRow, Chip,
 } from '@mui/material';
-import { ArrowForward, Info } from '@mui/icons-material';
+import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
+import InfoIcon from '@mui/icons-material/Info';
 import { useTranslation } from 'react-i18next';
 import { useTripStore } from '../../store/trip';
 import { ModePill } from '../../components/ModePill';
@@ -51,7 +52,7 @@ const RouteDetail: React.FC = () => {
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
                     <ModePill mode={leg.mode as any} />
                     <Typography variant="body2" fontWeight={600}>{leg.from}</Typography>
-                    <ArrowForward sx={{ fontSize: 14, color: 'text.disabled' }} />
+                    <ArrowForwardIcon sx={{ fontSize: 14, color: 'text.disabled' }} />
                     <Typography variant="body2" fontWeight={600}>{leg.to}</Typography>
                   </Box>
                   <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
@@ -65,7 +66,7 @@ const RouteDetail: React.FC = () => {
                   </Box>
                   {leg.boarding && (
                     <Box sx={{ mt: 0.75, p: 1, backgroundColor: 'background.default', borderRadius: 1, display: 'flex', gap: 0.5 }}>
-                      <Info sx={{ fontSize: 14, color: 'info.main', mt: '1px', flexShrink: 0 }} />
+                      <InfoIcon sx={{ fontSize: 14, color: 'info.main', mt: '1px', flexShrink: 0 }} />
                       <Typography variant="caption" color="text.secondary">{leg.boarding}</Typography>
                     </Box>
                   )}

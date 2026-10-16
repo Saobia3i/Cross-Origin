@@ -1,6 +1,6 @@
 import React from 'react';
 import { Box, Typography, Button, Container } from '@mui/material';
-import { Add } from '@mui/icons-material';
+import AddIcon from '@mui/icons-material/Add';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import AlertsFeed from '../features/alerts/AlertsFeed';
@@ -17,7 +17,7 @@ const AlertsPage: React.FC = () => {
           🔔 {t('nav.alerts')}
         </Typography>
         {user && (
-          <Button component={Link} to="/report" variant="contained" startIcon={<Add />}>
+          <Button component={Link} to="/report" variant="contained" startIcon={<AddIcon />}>
             {t('alert.report')}
           </Button>
         )}

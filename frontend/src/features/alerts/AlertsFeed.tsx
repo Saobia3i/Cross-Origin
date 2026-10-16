@@ -3,7 +3,9 @@ import {
   Box, Typography, Paper, Chip, Button, TextField, Divider,
   LinearProgress, Avatar, IconButton,
 } from '@mui/material';
-import { ThumbUp, ThumbDown, ChatBubbleOutline, Image as ImageIcon } from '@mui/icons-material';
+import ThumbUp from '@mui/icons-material/ThumbUp';
+import ThumbDown from '@mui/icons-material/ThumbDown';
+import ChatBubbleOutlineOutlinedIcon from '@mui/icons-material/ChatBubbleOutlineOutlined';
 import { useTranslation } from 'react-i18next';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { fetchAlerts, voteAlert, retractVote } from '../../api/endpoints';
@@ -136,7 +138,7 @@ const AlertCard: React.FC<{ alert: Alert }> = ({ alert }) => {
             {alert.downvotes}
           </Button>
           <Button
-            size="small" startIcon={<ChatBubbleOutline sx={{ fontSize: '14px !important' }} />}
+            size="small" startIcon={<ChatBubbleOutlineOutlinedIcon sx={{ fontSize: '14px !important' }} />}
             onClick={() => setExpanded(!expanded)}
             sx={{ color: 'text.secondary', minWidth: 0, px: 1, '&:hover': { color: 'text.primary' } }}
           >

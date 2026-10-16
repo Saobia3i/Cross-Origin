@@ -2,9 +2,10 @@ import React from 'react';
 import {
   Container, Typography, Box, Grid, Paper, Button, Chip,
 } from '@mui/material';
-import {
-  BarChart, Block, FactCheck, AttachMoney, AssignmentInd,
-} from '@mui/icons-material';
+import BarChartIcon from '@mui/icons-material/BarChart';
+import BlockIcon from '@mui/icons-material/Block';
+import FactCheckIcon from '@mui/icons-material/FactCheck';
+import AssignmentIndIcon from '@mui/icons-material/AssignmentInd';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -137,10 +138,10 @@ const AdminPage: React.FC = () => {
 
       {/* Stats */}
       <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr 1fr', md: 'repeat(4, 1fr)' }, gap: 2, mb: 4 }}>
-        <StatCard label="Pending reports" value={alerts.filter((a: any) => a.status === 'pending').length}   icon={<FactCheck />}       color="#F59E0B" />
-        <StatCard label="Verified alerts" value={alerts.filter((a: any) => a.status === 'verified').length}  icon={<BarChart />}        color="#16A34A" />
-        <StatCard label="Closed roads"   value={alerts.filter((a: any) => a.edge_closed).length}             icon={<Block />}           color="#E11D48" />
-        <StatCard label="Admin pending"  value={0}                                                            icon={<AssignmentInd />}   color="#7C3AED" />
+        <StatCard label="Pending reports" value={alerts.filter((a: any) => a.status === 'pending').length}   icon={<FactCheckIcon />}       color="#F59E0B" />
+        <StatCard label="Verified alerts" value={alerts.filter((a: any) => a.status === 'verified').length}  icon={<BarChartIcon />}        color="#16A34A" />
+        <StatCard label="Closed roads"   value={alerts.filter((a: any) => a.edge_closed).length}             icon={<BlockIcon />}           color="#E11D48" />
+        <StatCard label="Admin pending"  value={0}                                                            icon={<AssignmentIndIcon />}   color="#7C3AED" />
       </Box>
 
       {/* Action links */}

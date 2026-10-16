@@ -3,7 +3,7 @@ import {
   Container, Typography, Box, Tabs, Tab, TextField, InputAdornment,
   Table, TableBody, TableCell, TableHead, TableRow, Paper, Chip,
 } from '@mui/material';
-import { Search } from '@mui/icons-material';
+import SearchIcon from '@mui/icons-material/Search';
 import { useTranslation } from 'react-i18next';
 import { useQuery } from '@tanstack/react-query';
 import { fetchNetwork } from '../api/endpoints';
@@ -103,7 +103,7 @@ const NetworkPage: React.FC = () => {
         <TextField
           size="small" value={q} onChange={(e) => setQ(e.target.value)}
           placeholder={t('network.search')}
-          InputProps={{ startAdornment: <InputAdornment position="start"><Search fontSize="small" /></InputAdornment> }}
+          InputProps={{ startAdornment: <InputAdornment position="start"><SearchIcon fontSize="small" /></InputAdornment> }}
           sx={{ width: 280 }}
         />
       </Box>

@@ -3,20 +3,24 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import {
   AppBar, Toolbar, Box, IconButton, Button, Tooltip, Typography,
 } from '@mui/material';
-import {
-  Map, Search, NotificationsNone, Chat, GridView,
-  DarkMode, LightMode, AdminPanelSettings,
-} from '@mui/icons-material';
+import MapIcon from '@mui/icons-material/Map';
+import SearchIcon from '@mui/icons-material/Search';
+import NotificationsNoneIcon from '@mui/icons-material/NotificationsNone';
+import ChatIcon from '@mui/icons-material/Chat';
+import GridViewIcon from '@mui/icons-material/GridView';
+import DarkModeIcon from '@mui/icons-material/DarkMode';
+import LightModeIcon from '@mui/icons-material/LightMode';
+import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings';
 import { useTranslation } from 'react-i18next';
 import { useUIStore } from '../store/ui';
 import { useAuthStore } from '../store/auth';
 import { useChatStore } from '../store/chat';
 
 const NAV = [
-  { key: 'plan',     path: '/',          Icon: Map },
-  { key: 'alerts',   path: '/alerts',    Icon: NotificationsNone },
-  { key: 'simulate', path: '/simulator', Icon: Search },
-  { key: 'network',  path: '/network',   Icon: GridView },
+  { key: 'plan',     path: '/',          Icon: MapIcon },
+  { key: 'alerts',   path: '/alerts',    Icon: NotificationsNoneIcon },
+  { key: 'simulate', path: '/simulator', Icon: SearchIcon },
+  { key: 'network',  path: '/network',   Icon: GridViewIcon },
 ];
 
 export const Navbar: React.FC = () => {
@@ -45,12 +49,12 @@ export const Navbar: React.FC = () => {
         {/* Logo */}
         <Box component={Link} to="/" sx={{ display: 'flex', alignItems: 'center', gap: 1, textDecoration: 'none', mr: 2 }}>
           <Box sx={{
-            width: 32, height: 32, borderRadius: 1.5,
-            background: 'linear-gradient(135deg, #0891B2 0%, #155E75 100%)',
+            width: 32, height: 32, borderRadius: 1,
+            background: '#E6B800',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontSize: 18,
-          }}>🗺</Box>
-          <Typography variant="h6" sx={{ fontFamily: 'var(--font-heading)', fontWeight: 700, color: 'text.primary', display: { xs: 'none', sm: 'block' } }}>
+            fontSize: 18, border: '2px solid #BF9A00',
+          }}>🛣</Box>
+          <Typography variant="h6" sx={{ fontFamily: 'var(--font-heading)', fontWeight: 700, color: '#F2F0EA', display: { xs: 'none', sm: 'block' } }}>
             DhakaPath
           </Typography>
         </Box>
@@ -66,10 +70,10 @@ export const Navbar: React.FC = () => {
                 to={path}
                 startIcon={<Icon sx={{ fontSize: 18 }} />}
                 sx={{
-                  color:           active ? 'primary.main' : 'text.secondary',
-                  backgroundColor: active ? 'primary.light' : 'transparent',
+                  color:           active ? '#E6B800' : '#D4D0C8',
+                  backgroundColor: active ? 'rgba(230,184,0,0.12)' : 'transparent',
                   fontWeight:      active ? 600 : 400,
-                  '&:hover':       { backgroundColor: active ? 'primary.light' : 'action.hover', color: 'text.primary' },
+                  '&:hover':       { backgroundColor: 'rgba(230,184,0,0.1)', color: '#E6B800' },
                   px: 1.5, py: 0.75,
                 }}
               >
@@ -106,14 +110,14 @@ export const Navbar: React.FC = () => {
           {/* Theme toggle */}
           <Tooltip title={isDark ? 'Light mode' : 'Dark mode'}>
             <IconButton onClick={toggleTheme} size="small">
-              {isDark ? <LightMode fontSize="small" /> : <DarkMode fontSize="small" />}
+              {isDark ? <LightModeIcon fontSize="small" /> : <DarkModeIcon fontSize="small" />}
             </IconButton>
           </Tooltip>
 
           {/* Chat */}
           <Tooltip title={t('nav.chat')}>
             <IconButton onClick={toggleChat} size="small">
-              <Chat fontSize="small" />
+              <ChatIcon fontSize="small" />
             </IconButton>
           </Tooltip>
 
@@ -121,7 +125,7 @@ export const Navbar: React.FC = () => {
           {(user?.role === 'admin' || user?.role === 'superadmin') && (
             <Tooltip title={t('nav.admin')}>
               <IconButton component={Link} to="/admin" size="small">
-                <AdminPanelSettings fontSize="small" />
+                <AdminPanelSettingsIcon fontSize="small" />
               </IconButton>
             </Tooltip>
           )}

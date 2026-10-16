@@ -3,7 +3,9 @@ import {
   Box, TextField, Button, Typography, Switch, FormControlLabel,
   Autocomplete, Chip, Paper,
 } from '@mui/material';
-import { Search, MyLocation, TrendingUp } from '@mui/icons-material';
+import SearchIcon from '@mui/icons-material/Search';
+import MyLocationIcon from '@mui/icons-material/MyLocation';
+import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import { useTranslation } from 'react-i18next';
 import { useTripStore } from '../../store/trip';
 import { searchTrips } from '../../api/endpoints';
@@ -42,7 +44,7 @@ const TripSearchForm: React.FC = () => {
   return (
     <Paper elevation={0} sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 2, p: 2.5, display: 'flex', flexDirection: 'column', gap: 2 }}>
       <Typography variant="h6" sx={{ fontFamily: 'var(--font-heading)', fontWeight: 700, display: 'flex', alignItems: 'center', gap: 1 }}>
-        <Search fontSize="small" sx={{ color: 'primary.main' }} />
+        <SearchIcon fontSize="small" sx={{ color: 'primary.main' }} />
         {t('trip.search')}
       </Typography>
 
@@ -51,7 +53,7 @@ const TripSearchForm: React.FC = () => {
         onInputChange={(_, v) => setSearch({ origin: v })}
         renderInput={(params) => (
           <TextField {...params} label={t('trip.from')} size="small"
-            InputProps={{ ...params.InputProps, startAdornment: <MyLocation sx={{ fontSize: 16, color: 'primary.main', mr: 0.5 }} /> }}
+            InputProps={{ ...params.InputProps, startAdornment: <MyLocationIcon sx={{ fontSize: 16, color: 'primary.main', mr: 0.5 }} /> }}
           />
         )}
       />
@@ -93,14 +95,14 @@ const TripSearchForm: React.FC = () => {
             onClick={() => setSortBy(s)}
             variant={sortBy === s ? 'filled' : 'outlined'}
             color={sortBy === s ? 'primary' : 'default'}
-            icon={<TrendingUp sx={{ fontSize: '14px !important' }} />}
+            icon={<TrendingUpIcon sx={{ fontSize: '14px !important' }} />}
           />
         ))}
       </Box>
 
       <Button
         variant="contained" fullWidth onClick={handleSearch} disabled={loading || !origin || !destination}
-        startIcon={<Search />}
+        startIcon={<SearchIcon />}
         sx={{ height: 44 }}
       >
         {loading ? t('trip.searching') : t('trip.search')}

@@ -3,7 +3,10 @@ import {
   Box, Typography, Paper, Button, MenuItem, Select, FormControl,
   InputLabel, Divider, Chip,
 } from '@mui/material';
-import { Thunderstorm, DirectionsCar, Block, Refresh } from '@mui/icons-material';
+import ThunderstormIcon from '@mui/icons-material/Thunderstorm';
+import DirectionsCarIcon from '@mui/icons-material/DirectionsCar';
+import BlockIcon from '@mui/icons-material/Block';
+import RefreshIcon from '@mui/icons-material/Refresh';
 import { useTranslation } from 'react-i18next';
 import { runSimulation, resetSimulation } from '../../api/endpoints';
 import { FareText } from '../../components/FareText';
@@ -28,9 +31,9 @@ const SimulatorPanel: React.FC = () => {
   const [loading, setLoading]   = useState(false);
 
   const SCENARIOS = [
-    { key: 'heavy_rain',        label: t('sim.heavyRain'),         Icon: Thunderstorm, color: '#2563EB' },
-    { key: 'rush_hour',         label: t('sim.rushHour'),          Icon: DirectionsCar, color: '#F59E0B' },
-    { key: 'block_intersection',label: t('sim.blockIntersection'), Icon: Block,        color: '#E11D48' },
+    { key: 'heavy_rain',        label: t('sim.heavyRain'),         Icon: ThunderstormIcon, color: '#2563EB' },
+    { key: 'rush_hour',         label: t('sim.rushHour'),          Icon: DirectionsCarIcon, color: '#F59E0B' },
+    { key: 'block_intersection',label: t('sim.blockIntersection'), Icon: BlockIcon,        color: '#E11D48' },
   ] as const;
 
   const handleRun = async () => {
@@ -102,7 +105,7 @@ const SimulatorPanel: React.FC = () => {
         >
           {loading ? 'Running…' : 'Run Scenario'}
         </Button>
-        <Button variant="outlined" startIcon={<Refresh />} onClick={handleReset} sx={{ height: 44 }}>
+        <Button variant="outlined" startIcon={<RefreshIcon />} onClick={handleReset} sx={{ height: 44 }}>
           {t('sim.reset')}
         </Button>
       </Box>

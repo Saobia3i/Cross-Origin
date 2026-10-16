@@ -1,6 +1,7 @@
 import React from 'react';
 import { Box, Typography, Divider, Chip, Paper } from '@mui/material';
-import { ArrowForward, Warning } from '@mui/icons-material';
+import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
+import WarningIcon from '@mui/icons-material/Warning';
 import { useTranslation } from 'react-i18next';
 import { useTripStore } from '../../store/trip';
 import { ModePill } from '../../components/ModePill';
@@ -27,7 +28,7 @@ const RouteCard: React.FC<{ route: RouteOption; selected: boolean; onClick: () =
         {route.legs.map((leg, i) => (
           <React.Fragment key={i}>
             <ModePill mode={leg.mode as any} />
-            {i < route.legs.length - 1 && <ArrowForward sx={{ fontSize: 14, color: 'text.disabled' }} />}
+            {i < route.legs.length - 1 && <ArrowForwardIcon sx={{ fontSize: 14, color: 'text.disabled' }} />}
           </React.Fragment>
         ))}
       </Box>
@@ -48,7 +49,7 @@ const RouteCard: React.FC<{ route: RouteOption; selected: boolean; onClick: () =
         </Typography>
 
         <Box sx={{ ml: 'auto', display: 'flex', gap: 0.75, alignItems: 'center' }}>
-          {route.disrupted && <Warning sx={{ fontSize: 16, color: 'warning.main' }} />}
+          {route.disrupted && <WarningIcon sx={{ fontSize: 16, color: 'warning.main' }} />}
           <GroundingBadge ok={route.grounding_ok} />
         </Box>
       </Box>

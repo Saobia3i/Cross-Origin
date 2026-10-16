@@ -10,7 +10,7 @@ import { useTripStore } from '../store/trip';
 const MapPlaceholder: React.FC = () => (
   <Box sx={{
     width: '100%', height: '100%', minHeight: 400,
-    background: 'linear-gradient(135deg, #0A0F1C 0%, #0F2340 50%, #0A0F1C 100%)',
+    background: 'linear-gradient(160deg, #3A3930 0%, #2A2920 50%, #1C1C18 100%)',
     display: 'flex', alignItems: 'center', justifyContent: 'center',
     borderRadius: 0, position: 'relative', overflow: 'hidden',
   }}>
@@ -22,7 +22,7 @@ const MapPlaceholder: React.FC = () => (
     }} />
     <Box sx={{ textAlign: 'center', zIndex: 1 }}>
       <Box sx={{ fontSize: 64, mb: 1 }}>🗺️</Box>
-      <Box sx={{ color: '#22D3EE', fontFamily: 'var(--font-mono)', fontSize: 14 }}>
+      <Box sx={{ color: '#E6B800', fontFamily: 'var(--font-mono)', fontSize: 14 }}>
         Map component (Leaflet + OSM)
       </Box>
       <Box sx={{ color: '#647080', fontSize: 12, mt: 0.5 }}>

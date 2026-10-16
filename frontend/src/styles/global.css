@@ -19,29 +19,50 @@ h1,h2,h3,h4,h5,h6 {
   line-height: 1.25;
 }
 
-a { color: var(--color-primary); text-decoration: none; transition: var(--tr); }
-a:hover { color: var(--color-primary-dark); }
+a { color: var(--color-primary-dark); text-decoration: none; transition: var(--tr); }
+a:hover { color: var(--color-green); }
 
 button { cursor: pointer; font-family: inherit; }
 
-/* Scrollbar */
-::-webkit-scrollbar { width: 6px; height: 6px; }
-::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: var(--color-line); border-radius: var(--radius-full); }
-::-webkit-scrollbar-thumb:hover { background: var(--color-text-muted); }
+/* Road-stripe scrollbar — yellow thumb */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: var(--color-bg); }
+::-webkit-scrollbar-thumb { background: var(--color-primary); border-radius: var(--radius-full); }
+::-webkit-scrollbar-thumb:hover { background: var(--color-green); }
 
 /* Utility */
 .mono         { font-family: var(--font-mono); }
 .text-muted   { color: var(--color-text-muted); }
 .ellipsis     { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.surface-card { background: var(--color-surface); border: 1px solid var(--color-line); border-radius: var(--radius-lg); }
-.sr-only      { position: absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); }
+.surface-card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-lg);
+}
+.sr-only { position: absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); }
+
+/* Road dashes — decorative divider */
+.road-divider {
+  height: 4px;
+  background: repeating-linear-gradient(
+    90deg,
+    var(--color-primary) 0, var(--color-primary) 32px,
+    transparent 32px, transparent 48px
+  );
+  border: none;
+  border-radius: 2px;
+}
 
 /* Leaflet overrides */
-.leaflet-container { background: var(--color-bg); font-family: var(--font-body); }
-.leaflet-popup-content-wrapper { border-radius: var(--radius-lg); box-shadow: var(--shadow-md); font-family: var(--font-body); }
+.leaflet-container { background: #3A3930; font-family: var(--font-body); }
+.leaflet-popup-content-wrapper {
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  font-family: var(--font-body);
+  background: var(--color-surface);
+}
 .leaflet-control-zoom a {
-  color: var(--color-text-primary) !important;
+  color: var(--color-primary) !important;
   background: var(--color-surface) !important;
   border-color: var(--color-line) !important;
   min-width: 44px !important;

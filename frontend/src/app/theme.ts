@@ -1,104 +1,208 @@
-import { createTheme, alpha } from '@mui/material/styles';
+import { createTheme } from '@mui/material/styles';
 
-const PRIMARY      = '#0891B2';
-const PRIMARY_DARK = '#155E75';
-const PRIMARY_TINT = '#CFFAFE';
-const ACCENT       = '#FACC15';
+// ── Shared overrides (ripple-free, tight border radius) ─────────────────
+const sharedComponents = {
+  MuiButtonBase: { defaultProps: { disableRipple: true } },
+  MuiButton: {
+    styleOverrides: {
+      root: {
+        textTransform: 'none' as const,
+        fontFamily: "'Space Grotesk', sans-serif",
+        fontWeight: 600,
+        borderRadius: 8,
+        transition: 'background-color 120ms ease, border-color 120ms ease, color 120ms ease',
+        boxShadow: 'none',
+        '&:hover': { boxShadow: 'none' },
+        '&:active': { boxShadow: 'none' },
+      },
+      // Yellow buttons get dark text
+      containedPrimary: {
+        color: '#1A1600',
+        '&:hover': { color: '#1A1600' },
+      },
+    },
+  },
+  MuiChip: {
+    styleOverrides: {
+      root: { borderRadius: 6, fontWeight: 500 },
+    },
+  },
+  MuiPaper: {
+    styleOverrides: {
+      root: { borderRadius: 10 },
+    },
+  },
+  MuiTextField: {
+    defaultProps: { variant: 'outlined' as const },
+    styleOverrides: {
+      root: { '& .MuiOutlinedInput-root': { borderRadius: 8 } },
+    },
+  },
+  MuiTab: {
+    styleOverrides: {
+      root: { textTransform: 'none' as const, fontWeight: 600 },
+    },
+  },
+};
 
-const shared = {
+// ── Light Theme — "Daytime Road" ─────────────────────────────────────────
+export const lightTheme = createTheme({
+  palette: {
+    mode: 'light',
+    primary: {
+      main:          '#E6B800',   // road-marking yellow
+      dark:          '#BF9A00',
+      light:         '#FFF8D6',
+      contrastText:  '#1A1600',   // dark text on yellow
+    },
+    secondary: {
+      main:         '#2E7D4F',    // signal green
+      light:        '#D6EFDF',
+      contrastText: '#FFFFFF',
+    },
+    success: {
+      main:  '#2E7D4F',
+      light: '#D6EFDF',
+    },
+    warning: {
+      main:  '#E6B800',
+      light: '#FFF8D6',
+    },
+    error: {
+      main:  '#C0392B',
+      light: '#FDECEA',
+    },
+    info: {
+      main: '#1A6FA8',
+    },
+    background: {
+      default: '#CCCBC6',   // asphalt road surface
+      paper:   '#F2F0EA',   // concrete card
+    },
+    text: {
+      primary:   '#1A1A14',
+      secondary: '#4A4840',
+      disabled:  '#7A7668',
+    },
+    divider: '#B4B0A5',
+  },
   typography: {
     fontFamily: "'Inter', system-ui, sans-serif",
     h1: { fontFamily: "'Space Grotesk', sans-serif", fontWeight: 700 },
     h2: { fontFamily: "'Space Grotesk', sans-serif", fontWeight: 700 },
-    h3: { fontFamily: "'Space Grotesk', sans-serif", fontWeight: 600 },
-    h4: { fontFamily: "'Space Grotesk', sans-serif", fontWeight: 600 },
+    h3: { fontFamily: "'Space Grotesk', sans-serif", fontWeight: 700 },
+    h4: { fontFamily: "'Space Grotesk', sans-serif", fontWeight: 700 },
     h5: { fontFamily: "'Space Grotesk', sans-serif", fontWeight: 600 },
     h6: { fontFamily: "'Space Grotesk', sans-serif", fontWeight: 600 },
-    body1: { fontSize: '0.9375rem', lineHeight: 1.6 },
-    body2: { fontSize: '0.875rem', lineHeight: 1.5 },
-    caption: { fontSize: '0.75rem' },
-    overline: { fontFamily: "'Space Grotesk', sans-serif", fontWeight: 600, letterSpacing: '0.08em' },
+    button: { fontFamily: "'Space Grotesk', sans-serif" },
   },
-  shape: { borderRadius: 8 },
   components: {
-    MuiButtonBase:  { defaultProps: { disableRipple: true } },
-    MuiButton: {
-      defaultProps: { disableRipple: true, disableElevation: true },
+    ...sharedComponents,
+    MuiAppBar: {
       styleOverrides: {
-        root: { textTransform: 'none', fontWeight: 600, borderRadius: 8, transition: 'background-color 120ms ease, border-color 120ms ease, color 120ms ease' },
-        sizeMedium: { height: 40, padding: '0 16px' },
-        sizeLarge:  { height: 48, padding: '0 24px' },
-        sizeSmall:  { height: 32, padding: '0 12px', fontSize: '0.8125rem' },
+        root: {
+          backgroundColor: '#3A3930',  // dark asphalt navbar
+          color:           '#F2F0EA',
+          borderBottom:    '2px solid #E6B800', // yellow stripe
+        },
       },
     },
-    MuiIconButton: {
-      defaultProps: { disableRipple: true },
-      styleOverrides: { root: { borderRadius: 8, transition: 'background-color 120ms ease', '&:hover': { backgroundColor: alpha(PRIMARY, 0.08) } } },
+    MuiBottomNavigation: {
+      styleOverrides: {
+        root: {
+          backgroundColor: '#3A3930',
+          borderTop: '2px solid #E6B800',
+        },
+      },
     },
-    MuiTextField: {
-      defaultProps: { variant: 'outlined', size: 'small' },
-      styleOverrides: { root: { '& .MuiOutlinedInput-root': { borderRadius: 8, '& fieldset': { borderColor: '#E2E8F0' }, '&:hover fieldset': { borderColor: '#94A3B8' }, '&.Mui-focused fieldset': { borderColor: PRIMARY } } } },
+    MuiBottomNavigationAction: {
+      styleOverrides: {
+        root: {
+          color: '#B0AC98',
+          '&.Mui-selected': { color: '#E6B800' },
+        },
+      },
     },
-    MuiCard: {
-      defaultProps: { elevation: 0 },
-      styleOverrides: { root: { borderRadius: 12, backgroundImage: 'none' } },
-    },
-    MuiChip: {
-      styleOverrides: { root: { borderRadius: 9999, fontWeight: 500, fontSize: '0.75rem', height: 24, transition: 'background-color 120ms ease' }, label: { padding: '0 10px' } },
-    },
-    MuiDialog: {
-      defaultProps: { TransitionComponent: undefined },
-      styleOverrides: { paper: { borderRadius: 16, backgroundImage: 'none' } },
-    },
-    MuiDrawer:  { styleOverrides: { paper: { backgroundImage: 'none' } } },
-    MuiMenu:    { styleOverrides: { paper: { borderRadius: 12, boxShadow: '0 4px 12px 0 rgb(0 0 0 / 0.08)', backgroundImage: 'none' } } },
-    MuiMenuItem: { defaultProps: { disableRipple: true }, styleOverrides: { root: { borderRadius: 6, margin: '2px 6px', transition: 'background-color 120ms ease' } } },
-    MuiTooltip: { styleOverrides: { tooltip: { fontSize: '0.75rem', borderRadius: 6 } } },
-    MuiLinearProgress: { styleOverrides: { root: { borderRadius: 9999, height: 6 } } },
-    MuiTabs: { styleOverrides: { indicator: { height: 2, borderRadius: 2 } } },
-    MuiTab: { defaultProps: { disableRipple: true }, styleOverrides: { root: { textTransform: 'none', fontWeight: 500, fontFamily: "'Space Grotesk', sans-serif", minHeight: 44 } } },
-    MuiAlert: { styleOverrides: { root: { borderRadius: 10 } } },
-  },
-};
+  } as any,
+});
 
-export const lightTheme = createTheme({
-  ...shared,
-  palette: {
-    mode: 'light',
-    primary:    { main: PRIMARY, dark: PRIMARY_DARK, light: PRIMARY_TINT, contrastText: '#fff' },
-    secondary:  { main: ACCENT, contrastText: '#0B1220' },
-    error:      { main: '#E11D48' },
-    warning:    { main: '#F59E0B' },
-    success:    { main: '#16A34A' },
-    info:       { main: '#2563EB' },
-    background: { default: '#F3F5F8', paper: '#FFFFFF' },
-    text:       { primary: '#0B1220', secondary: '#334155', disabled: '#94A3B8' },
-    divider:    '#E2E8F0',
-  },
-  components: {
-    ...shared.components as any,
-    MuiCard: { defaultProps: { elevation: 0 }, styleOverrides: { root: { borderRadius: 12, border: '1px solid #E2E8F0', backgroundImage: 'none' } } },
-    MuiMenu: { styleOverrides: { paper: { borderRadius: 12, border: '1px solid #E2E8F0', boxShadow: '0 4px 12px 0 rgb(0 0 0 / 0.08)', backgroundImage: 'none' } } },
-  },
-} as any);
-
+// ── Dark Theme — "Night Road" ─────────────────────────────────────────────
 export const darkTheme = createTheme({
-  ...shared,
   palette: {
     mode: 'dark',
-    primary:    { main: '#22D3EE', dark: PRIMARY, light: '#A5F3FC', contrastText: '#0A0F1C' },
-    secondary:  { main: ACCENT, contrastText: '#0A0F1C' },
-    error:      { main: '#FB7185' },
-    warning:    { main: '#FBBF24' },
-    success:    { main: '#4ADE80' },
-    info:       { main: '#60A5FA' },
-    background: { default: '#0A0F1C', paper: '#111827' },
-    text:       { primary: '#E6EDF7', secondary: '#A8B8D0', disabled: '#647080' },
-    divider:    '#243044',
+    primary: {
+      main:         '#F0C800',
+      dark:         '#C9A800',
+      light:        '#332B00',
+      contrastText: '#1A1600',
+    },
+    secondary: {
+      main:         '#3DAE6A',
+      light:        '#1A3A28',
+      contrastText: '#FFFFFF',
+    },
+    success: {
+      main:  '#3DAE6A',
+      light: '#1A3A28',
+    },
+    warning: {
+      main:  '#F0C800',
+      light: '#332B00',
+    },
+    error: {
+      main:  '#E55347',
+      light: '#3A1A18',
+    },
+    info: {
+      main: '#4D9FCC',
+    },
+    background: {
+      default: '#1C1C18',   // night asphalt
+      paper:   '#28271F',   // dark concrete card
+    },
+    text: {
+      primary:   '#EDE9DA',
+      secondary: '#B0AC98',
+      disabled:  '#726E5A',
+    },
+    divider: '#44433A',
+  },
+  typography: {
+    fontFamily: "'Inter', system-ui, sans-serif",
+    h1: { fontFamily: "'Space Grotesk', sans-serif", fontWeight: 700 },
+    h2: { fontFamily: "'Space Grotesk', sans-serif", fontWeight: 700 },
+    h3: { fontFamily: "'Space Grotesk', sans-serif", fontWeight: 700 },
+    h4: { fontFamily: "'Space Grotesk', sans-serif", fontWeight: 700 },
+    h5: { fontFamily: "'Space Grotesk', sans-serif", fontWeight: 600 },
+    h6: { fontFamily: "'Space Grotesk', sans-serif", fontWeight: 600 },
+    button: { fontFamily: "'Space Grotesk', sans-serif" },
   },
   components: {
-    ...shared.components as any,
-    MuiCard: { defaultProps: { elevation: 0 }, styleOverrides: { root: { borderRadius: 12, border: '1px solid #243044', backgroundImage: 'none' } } },
-    MuiMenu: { styleOverrides: { paper: { borderRadius: 12, border: '1px solid #243044', boxShadow: '0 4px 12px 0 rgb(0 0 0 / 0.3)', backgroundImage: 'none' } } },
-  },
-} as any);
+    ...sharedComponents,
+    MuiAppBar: {
+      styleOverrides: {
+        root: {
+          backgroundColor: '#141410',
+          color:           '#EDE9DA',
+          borderBottom:    '2px solid #F0C800',
+        },
+      },
+    },
+    MuiBottomNavigation: {
+      styleOverrides: {
+        root: {
+          backgroundColor: '#141410',
+          borderTop: '2px solid #F0C800',
+        },
+      },
+    },
+    MuiBottomNavigationAction: {
+      styleOverrides: {
+        root: {
+          color: '#726E5A',
+          '&.Mui-selected': { color: '#F0C800' },
+        },
+      },
+    },
+  } as any,
+});
