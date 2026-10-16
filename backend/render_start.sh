@@ -7,6 +7,9 @@ echo "=== DhakaPath Backend — Render Startup ==="
 
 # 1. Create tables & seed demo users + fare rules (normalized source = real datasets)
 #    Falls back gracefully if normalized JSON files are missing.
+echo "[startup] Normalizing datasets (generated files are not in git)..."
+python -m app.scripts.normalize_datasets > /dev/null
+
 echo "[startup] Running database seed..."
 python -m app.scripts.seed --source normalized 2>/dev/null || \
 python -m app.scripts.seed --source fixtures
