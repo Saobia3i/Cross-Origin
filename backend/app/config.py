@@ -24,6 +24,8 @@ class Settings:
             for o in os.getenv("CORS_ORIGINS", "http://localhost:5173,http://localhost:3000").split(",")
             if o.strip()
         ]
+        # Optional regex for extra allowed origins, e.g. Vercel previews: https://.*\.vercel\.app
+        self.cors_origin_regex = os.getenv("CORS_ORIGIN_REGEX", "").strip() or None
         self.demo_secret = os.getenv("DEMO_SECRET", "change_me_debug_secret")
         self.openrouter_api_key = os.getenv("OPENROUTER_API_KEY", "")
         self.gemini_api_key = os.getenv("GEMINI_API_KEY", "")

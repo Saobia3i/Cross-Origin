@@ -55,7 +55,7 @@ services:
       # Set this to your frontend URL after first deploy, e.g.:
       # https://dhakapath-frontend.onrender.com
       - key: CORS_ORIGINS
-        value: https://dhakapath-frontend.onrender.com
+        value: https://YOUR-APP.vercel.app   # set to your Vercel URL in the Render dashboard
 
       - key: DEMO_SECRET
         generateValue: true
@@ -101,30 +101,4 @@ services:
       - key: MAX_UPLOAD_IMAGES
         value: "5"
 
-  # ─────────────────────────────────────────────
-  # 2. FRONTEND — React / Vite static site
-  # ─────────────────────────────────────────────
-  - type: web
-    name: dhakapath-frontend
-    runtime: static
-    # Static sites on Render are always free — no plan field needed
-    rootDir: frontend
-    buildCommand: npm ci && npm run build
-    staticPublishPath: ./dist
-
-    # SPA routing: all paths fall through to index.html
-    routes:
-      - type: rewrite
-        source: /*
-        destination: /index.html
-
-    envVars:
-      # Point to the deployed backend — update this after backend is live
-      - key: VITE_API_BASE_URL
-        value: https://dhakapath-backend.onrender.com
-
-      - key: VITE_USE_MOCKS
-        value: "false"
-
-      - key: VITE_EVENT_POLL_INTERVAL_MS
-        value: "12000"
+  # The frontend is deployed separately on Vercel (see DEPLOY_VERCEL.md).
