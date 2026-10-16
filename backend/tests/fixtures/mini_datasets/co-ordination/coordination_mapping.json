@@ -1,0 +1,11 @@
+{
+  "_doc": "TEST FIXTURE override of dataset_config/coordination_mapping.json (layers are merged).",
+  "coordinate_order": "lon_lat",
+  "layers": {
+    "TestFixtureLine": {
+      "role": "transit_route", "mode": "metro", "mode_code": "MRT6",
+      "line_name": "TEST FIXTURE line", "provider": null,
+      "trailing_text_fields": ["from_stop", "to_stop"]
+    }
+  }
+}

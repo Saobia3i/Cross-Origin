@@ -1,0 +1,13 @@
+{
+  "_doc": "Mode name -> mode_code used in route_id ({MODE}_{ORIGIN}_{DESTINATION}). Matching ignores case, spaces and punctuation; a parenthetical like '(Taxi / hired car)' is also tried without it. MRT6 follows the route_id example in the project brief.",
+  "RICKSHAW": {"mode": "rickshaw", "names": ["Rickshaw"]},
+  "CNG": {"mode": "cng", "names": ["CNG Auto-rickshaw", "CNG", "CNG Autorickshaw", "Auto-rickshaw"]},
+  "CAR": {"mode": "car", "names": ["Car (Taxi / hired car)", "Car", "Taxi", "Hired car"]},
+  "MOTORBIKE": {"mode": "motorbike", "names": ["Motorbike (informal ride)", "Motorbike"]},
+  "PATHAO_BIKE": {"mode": "ride_hailing_bike", "names": ["Pathao Bike"]},
+  "PATHAO_CAR": {"mode": "ride_hailing_car", "names": ["Pathao Car"]},
+  "UBER_CAR": {"mode": "ride_hailing_car", "names": ["Uber Car"]},
+  "UBER_MOTO": {"mode": "ride_hailing_bike", "names": ["Uber Moto"]},
+  "LOCAL_BUS": {"mode": "bus", "names": ["Local Bus", "Bus"]},
+  "MRT6": {"mode": "metro", "names": ["MRT-6 Metro Rail", "Metro", "MRT", "MRT6", "MRT-6", "MRT Line 6", "MRT Line-6", "Metro Rail", "Dhaka Metro Rail"]}
+}

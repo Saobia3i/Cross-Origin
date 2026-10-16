@@ -1,0 +1,30 @@
+{
+  "_doc": "TEST FIXTURE ONLY - synthetic demo reports for unit tests. Not real incidents. Seeded only by `seed --source fixtures`.",
+  "reports": [
+    {
+      "report_id": "rpt_TEST_FIXTURE_001",
+      "report_type": "waterlogging",
+      "severity": "heavy",
+      "affected_hub": "MIRPUR_10",
+      "affected_route_ids": ["MRT6_MIRPUR_10_FARMGATE"],
+      "description": "TEST FIXTURE: synthetic waterlogging report",
+      "reported_by_email": "user1@dhakapath.local",
+      "status": "pending",
+      "half_life_min": 60,
+      "expires_in_min": 120
+    },
+    {
+      "report_id": "rpt_TEST_FIXTURE_002",
+      "report_type": "all_clear",
+      "severity": "light",
+      "affected_hub": "FARMGATE",
+      "affected_route_ids": [],
+      "description": "TEST FIXTURE: synthetic all-clear report",
+      "reported_by_email": "user2@dhakapath.local",
+      "status": "verified",
+      "admin_approved": true,
+      "half_life_min": 30,
+      "expires_in_min": 60
+    }
+  ]
+}

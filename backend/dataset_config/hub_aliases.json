@@ -1,0 +1,13 @@
+{
+  "_doc": "Hub alias rules. Formatting-only variants (case/spacing/punctuation, e.g. 'Farm Gate' vs 'Farmgate', 'Mirpur10' vs 'Mirpur 10') are merged automatically. Any OTHER spelling is merged only when listed here. Spelling proposals are written to data/generated/normalization_report.json -> hub_alias.proposed_aliases; review them and copy accepted ones into approved_aliases (or into rejected_aliases to silence them).",
+  "required_aliases": [
+    {"alias": "Uttara", "canonical": "Uttara North", "source": "problem_owner_brief"},
+    {"alias": "Mirpur", "canonical": "Mirpur 10", "source": "problem_owner_brief"}
+  ],
+  "approved_aliases": [],
+  "rejected_aliases": [],
+  "preferred_display_names": [
+    "Uttara North", "Pallabi", "Mirpur 11", "Mirpur 10", "Kazipara",
+    "Agargaon", "Farmgate", "Shahbagh", "Dhaka Univ.", "Motijheel"
+  ]
+}
