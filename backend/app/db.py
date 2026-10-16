@@ -21,6 +21,10 @@ def _sqlite_foreign_keys(dbapi_connection, _record):
 
 
 def _resolve_url(url: str) -> str:
+    # Hosts (Render, Heroku) hand out "postgres://" / "postgresql://"; pin the psycopg2 driver we install.
+    for bare in ("postgres://", "postgresql://"):
+        if url.startswith(bare):
+            url = "postgresql+psycopg2://" + url[len(bare):]
     prefix = "sqlite:///"
     if url.startswith(prefix) and not url.startswith("sqlite:////"):
         path = url[len(prefix):]
