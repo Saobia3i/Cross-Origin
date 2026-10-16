@@ -4,7 +4,12 @@
     {"alias": "Uttara", "canonical": "Uttara North", "source": "problem_owner_brief"},
     {"alias": "Mirpur", "canonical": "Mirpur 10", "source": "problem_owner_brief"}
   ],
-  "approved_aliases": [],
+  "approved_aliases": [
+    {"alias": "Firmgate", "canonical": "Farmgate", "evidence": "Same MRT-6 station; the Dhaka_Metro_Fare_Matrix uses Farmgate; hubs are ~80 m apart. Approved by project owner request."},
+    {"alias": "Shahbag", "canonical": "Shahbagh", "evidence": "Spelling variant of the MRT-6 station Shahbagh in the metro fare matrix."},
+    {"alias": "Sonarga hotel", "canonical": "Sonargaon Hotel", "evidence": "co-ordination/Routemap-DhakaMetroRail.csv rows 10/11 end at the same point"},
+    {"alias": "Matijhil", "canonical": "Motijheel", "evidence": "Spelling variant of the MRT-6 station Motijheel in the metro fare matrix."}
+  ],
   "rejected_aliases": [],
   "preferred_display_names": [
     "Uttara North", "Pallabi", "Mirpur 11", "Mirpur 10", "Kazipara",

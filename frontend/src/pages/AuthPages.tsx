@@ -76,7 +76,7 @@ export const LoginPage: React.FC = () => {
         {/* Logo */}
         <Box sx={{ textAlign: 'center', mb: 3 }}>
           <Box sx={{ fontSize: 48, mb: 1 }}>🛣️</Box>
-          <Typography variant="h5" fontFamily="var(--font-heading)" fontWeight={700}>DhakaPath</Typography>
+          <Typography variant="h5" sx={{ fontWeight: 700, fontFamily: "var(--font-heading)" }}>DhakaPath</Typography>
           <Typography variant="body2" color="text.secondary">{t('auth.login')}</Typography>
         </Box>
 
@@ -86,7 +86,7 @@ export const LoginPage: React.FC = () => {
           sx={{ mb: 2, borderRadius: 2, fontSize: '0.8rem' }}
           icon={false}
         >
-          <Typography variant="caption" fontWeight={700} display="block" mb={0.75}>
+          <Typography variant="caption" sx={{ fontWeight: 700, display: "block", mb: 0.75 }}>
             🔧 Dev Mode — 1-click login (backend not needed)
           </Typography>
           <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
@@ -106,7 +106,7 @@ export const LoginPage: React.FC = () => {
               sx={{ backgroundColor: '#3A3930', color: '#F2F0EA', fontWeight: 700 }}
             />
           </Box>
-          <Typography variant="caption" color="text.secondary" display="block" mt={0.5}>
+          <Typography variant="caption" sx={{ display: "block", mt: 0.5, color: "text.secondary" }}>
             Or use email: <code>admin@dev</code> / password: <code>devpass</code>
           </Typography>
         </Alert>
@@ -130,7 +130,7 @@ export const LoginPage: React.FC = () => {
         <Divider sx={{ my: 2 }} />
         <Typography variant="body2" color="text.secondary" sx={{ textAlign: 'center' }}>
           {t('auth.noAccount')}{' '}
-          <MuiLink component={Link} to="/register" fontWeight={600}>{t('auth.register')}</MuiLink>
+          <MuiLink component={Link} to="/register" sx={{ fontWeight: 600 }}>{t('auth.register')}</MuiLink>
         </Typography>
       </Paper>
     </Container>
@@ -161,7 +161,7 @@ export const RegisterPage: React.FC = () => {
   return (
     <Container maxWidth="xs" sx={{ py: 6 }}>
       <Paper elevation={0} sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 3, p: 4 }}>
-        <Typography variant="h5" fontFamily="var(--font-heading)" fontWeight={700} sx={{ textAlign: 'center' }} mb={3}>
+        <Typography variant="h5" sx={{ fontWeight: 700, fontFamily: "var(--font-heading)", mb: 3, textAlign: 'center' }}>
           {t('auth.register')}
         </Typography>
 
@@ -178,7 +178,7 @@ export const RegisterPage: React.FC = () => {
         <Divider sx={{ my: 2 }} />
         <Typography variant="body2" color="text.secondary" sx={{ textAlign: 'center' }}>
           {t('auth.hasAccount')}{' '}
-          <MuiLink component={Link} to="/login" fontWeight={600}>{t('auth.login')}</MuiLink>
+          <MuiLink component={Link} to="/login" sx={{ fontWeight: 600 }}>{t('auth.login')}</MuiLink>
         </Typography>
       </Paper>
     </Container>

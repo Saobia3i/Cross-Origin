@@ -8,7 +8,7 @@ import { useTripStore } from '../../store/trip';
 import { useUIStore } from '../../store/ui';
 import MapView from './MapView';
 import { useMapOverlay } from './mapOverlay';
-import { makeHubIndex, toMapAlerts, toMapEdges, toMapHubs, toMapRoute, toMapSimulation } from './adapters';
+import { deriveMissingHubs, makeHubIndex, toMapAlerts, toMapEdges, toMapHubs, toMapRoute, toMapSimulation } from './adapters';
 import { MRT_STATIONS } from './geo';
 import type { MapLabels, MapLayers } from './types';
 
@@ -33,15 +33,19 @@ export default function ConnectedMap({ locate = true }: { locate?: boolean }) {
   const simulation = useMapOverlay((s) => s.simulation);
   const [activeHub, setActiveHub] = useState<string | null>(null);
 
-  const net = useQuery({ queryKey: ['network'], queryFn: fetchNetwork });
+  const net = useQuery({ queryKey: ['network'], queryFn: () => fetchNetwork() });
   const al = useQuery({ queryKey: ['alerts'], queryFn: () => fetchReports({ limit: 100 }), refetchInterval: 12_000 });
 
-  const hubs = useMemo(() => toMapHubs(net.data ?? REFERENCE_NETWORK), [net.data]);
+  const hubs = useMemo(() => {
+    const placed = toMapHubs(net.data ?? REFERENCE_NETWORK);
+    return net.data ? [...placed, ...deriveMissingHubs(net.data, placed)] : placed;
+  }, [net.data]);
   const edges = useMemo(() => toMapEdges(net.data ?? REFERENCE_NETWORK), [net.data]);
+  const edgeGeometry = useMemo(() => new Map(edges.flatMap((e) => (e.geometry ? [[e.id, e.geometry] as const] : []))), [edges]);
   const alerts = useMemo(() => toMapAlerts(al.data ?? []), [al.data]);
   const idx = useMemo(() => makeHubIndex(hubs), [hubs]);
-  const picked = useMemo(() => toMapRoute(selected, idx), [selected, idx]);
-  const sim = useMemo(() => toMapSimulation(simulation, idx), [simulation, idx]);
+  const picked = useMemo(() => toMapRoute(selected, idx, edgeGeometry), [selected, idx, edgeGeometry]);
+  const sim = useMemo(() => toMapSimulation(simulation, idx, edgeGeometry), [simulation, idx, edgeGeometry]);
 
   // Before/after: user's route solid + detour dotted. No route chosen yet ⇒ show the detour solid.
   const selectedRoute = picked ?? sim.alternativeRoute;

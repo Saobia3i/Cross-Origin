@@ -49,6 +49,7 @@ MAX_ALTERNATE_ATTEMPTS = CONFIG.get("max_alternate_attempts", 12)
 UNKNOWN_TIME_TIEBREAK_MIN = 1.0  # ranking tiebreak for fewest_transfers when an edge has no time
 LEG_TIEBREAK = 0.01
 SYMMETRIC_SOURCES = set(CONFIG.get("symmetric_sources", []))
+ASSUME_REVERSE_UNKNOWN = bool(CONFIG.get("assume_reverse_for_unknown_direction", False))
 
 
 # ============================================================================= geometry
@@ -287,6 +288,10 @@ def build_graph(session: Session, session_id: str | None = None, avoid_hubs: lis
         elif edge.direction == "unknown":
             if edge.source_dataset in SYMMETRIC_SOURCES:
                 directions.append((edge.destination_hub, edge.origin_hub))
+            elif ASSUME_REVERSE_UNKNOWN:
+                directions.append((edge.destination_hub, edge.origin_hub))
+                extra_warning = ("DIRECTION_ASSUMED: the dataset gives no direction for this route; "
+                                 "treated as two-way.")
             else:
                 extra_warning = ("DIRECTION_UNKNOWN: the dataset gives no direction for this route; "
                                  "traversed origin->destination only.")
@@ -392,7 +397,8 @@ def _search(graph: Graph, start: str, goal: str, objective: str, ctx: SearchCont
         return None
     heuristic = lambda node: 0.0  # noqa: E731
     algorithm = "dijkstra"
-    if use_heuristic and objective == "fastest" and graph.has_all_coordinates:
+    if use_heuristic and objective == "fastest" and graph.has_all_coordinates and (
+            _has_coords(graph.hubs.get(start)) and _has_coords(graph.hubs.get(goal))):
         vmax = _max_speed_km_per_min(graph, ctx)
         if vmax > 0 and goal in graph.hubs:
             g_hub = graph.hubs[goal]

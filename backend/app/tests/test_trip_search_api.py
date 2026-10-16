@@ -191,7 +191,8 @@ def test_same_origin_destination(client):
     error(search(client, origin="Farmgate", destination="Farm gate"), 422, "SAME_ORIGIN_DESTINATION")
 
 
-def test_no_route_found_is_a_successful_empty_result(client):
+def test_no_route_found_is_a_successful_empty_result(client, monkeypatch):
+    monkeypatch.setattr("app.services.routing_service.ASSUME_REVERSE_UNKNOWN", False)
     # the metro edges are forward-only (no direction data) and the bus edge is closed
     d = data(search(client, origin="Farmgate", destination="Uttara North"))
     assert d["routes"] == []

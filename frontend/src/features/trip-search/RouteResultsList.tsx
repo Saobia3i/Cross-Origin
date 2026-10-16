@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, Typography, Divider, Chip, Paper } from '@mui/material';
+import { Box, Typography, Chip, Paper } from '@mui/material';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import WarningIcon from '@mui/icons-material/Warning';
 import { useTranslation } from 'react-i18next';
@@ -48,7 +48,7 @@ const RouteCard: React.FC<{ route: RouteOption; selected: boolean; onClick: () =
           )}
         </Box>
         <Typography variant="body2" color="text.secondary" sx={{ fontFamily: 'var(--font-mono)' }}>
-          {t('trip.duration', { min: route.total_duration_min })}
+          {route.total_duration_min == null ? 'Time unavailable' : t('trip.duration', { min: route.total_duration_min })}
         </Typography>
         <Typography variant="body2" color="text.secondary">
           {route.transfers === 0 ? 'Direct' : t('trip.transfers', { n: route.transfers, count: route.transfers })}
@@ -65,15 +65,21 @@ const RouteCard: React.FC<{ route: RouteOption; selected: boolean; onClick: () =
 
 const RouteResultsList: React.FC = () => {
   const { t } = useTranslation();
-  const { results, selectedRoute, selectRoute } = useTripStore();
+  const { results, selectedRoute, selectRoute, source, setSource, searchResults, aiResults } = useTripStore();
 
   if (results.length === 0) return null;
 
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
       <Typography variant="subtitle2" sx={{ fontFamily: 'var(--font-heading)', fontWeight: 600, color: 'text.secondary' }}>
-        {t('trip.results')} ({results.length})
+        {source === 'ai' ? 'AI route options' : t('trip.results')} ({results.length})
       </Typography>
+      {searchResults.length > 0 && aiResults.length > 0 && (
+        <Box sx={{ display: 'flex', gap: 1 }}>
+          <Chip size="small" label="Search results" onClick={() => setSource('search')} color={source === 'search' ? 'primary' : 'default'} variant={source === 'search' ? 'filled' : 'outlined'} />
+          <Chip size="small" label="AI options" onClick={() => setSource('ai')} color={source === 'ai' ? 'primary' : 'default'} variant={source === 'ai' ? 'filled' : 'outlined'} />
+        </Box>
+      )}
       {results.map((route) => (
         <RouteCard
           key={route.route_option_id}

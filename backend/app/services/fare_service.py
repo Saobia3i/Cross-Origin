@@ -219,6 +219,9 @@ def find_fare_row(session: Session, mode: str, origin_hub_id: str, destination_h
     return None
 
 
+STUDENT_FARE_THRESHOLD_BDT = 20.0
+
+
 def calculate_student_fare(session: Session, mode: str, regular: FareRange, scenario: str,
                            fare_row: FareMatrixRow | None) -> tuple[FareRange, bool]:
     """(student range, discount_applies). Discount comes from fare_rules (bus 50%, min 10 by default)."""
@@ -226,16 +229,24 @@ def calculate_student_fare(session: Session, mode: str, regular: FareRange, scen
     if rule.student_discount_percent <= 0:
         return regular, False
     # Explicit Student_Fare columns are normal-scenario values.
+    student: FareRange | None = None
     if scenario == "normal" and fare_row is not None:
-        explicit = calculate_explicit_fare(fare_row, "student")
-        if explicit is not None:
-            return explicit, True
-    keep = 1 - rule.student_discount_percent / 100
-    floor = rule.minimum_student_fare_bdt or 0
-    low = max(floor, _ceil(regular.min_bdt * keep))
-    high = max(floor, _ceil(regular.max_bdt * keep))
-    notes = list(regular.notes) + [f"student discount {rule.student_discount_percent:g}% (min {floor:g} BDT)"]
-    return make_range(low, high, regular.source, notes), True
+        student = calculate_explicit_fare(fare_row, "student")
+    if student is None:
+        keep = 1 - rule.student_discount_percent / 100
+        floor = rule.minimum_student_fare_bdt or 0
+        low = max(floor, _ceil(regular.min_bdt * keep))
+        high = max(floor, _ceil(regular.max_bdt * keep))
+        student = make_range(low, high, regular.source,
+                             list(regular.notes) + [f"student discount {rule.student_discount_percent:g}% (min {floor:g} BDT)"])
+    # Product rule: fares of STUDENT_FARE_THRESHOLD_BDT or less stay as they are; only fares above it are discounted.
+    low = regular.min_bdt if regular.min_bdt <= STUDENT_FARE_THRESHOLD_BDT else student.min_bdt
+    high = regular.max_bdt if regular.max_bdt <= STUDENT_FARE_THRESHOLD_BDT else student.max_bdt
+    applies = regular.max_bdt > STUDENT_FARE_THRESHOLD_BDT
+    if not applies:
+        return regular, False
+    notes = list(student.notes) + [f"no student discount on fares up to {STUDENT_FARE_THRESHOLD_BDT:g} BDT"]
+    return make_range(low, high, student.source, notes), True
 
 
 # ----------------------------------------------------------------------------- leg & trip

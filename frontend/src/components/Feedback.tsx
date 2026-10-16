@@ -31,7 +31,7 @@ export const ErrorBox: React.FC<{ message?: string; onRetry?: () => void }> = ({
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2, py: 6, px: 3, textAlign: 'center' }}>
       <Typography sx={{ fontSize: 36 }}>⚠️</Typography>
-      <Typography color="error.main" fontWeight={500}>{message || t('common.error')}</Typography>
+      <Typography sx={{ fontWeight: 500, color: "error.main" }}>{message || t('common.error')}</Typography>
       {onRetry && (
         <Button variant="outlined" size="small" color="error" onClick={onRetry}>{t('common.retry')}</Button>
       )}

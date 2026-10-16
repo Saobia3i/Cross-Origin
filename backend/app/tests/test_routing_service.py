@@ -357,7 +357,8 @@ def test_one_way_edge_only_traversed_forward(w):
     assert any(e.to_hub == "X" for e in graph.adj["C"]) and "X" not in graph.adj
 
 
-def test_unknown_direction_is_forward_only_unless_source_is_symmetric(w):
+def test_unknown_direction_is_forward_only_unless_source_is_symmetric(w, monkeypatch):
+    monkeypatch.setattr(rs, "ASSUME_REVERSE_UNKNOWN", False)
     w.get(RouteEdge, "BUS_C_X").direction = "unknown"
     w.get(RouteEdge, "BUS_C_X").source_dataset = "co-ordination"
     w.get(RouteEdge, "RICK_A_C").direction = "unknown"
@@ -369,6 +370,16 @@ def test_unknown_direction_is_forward_only_unless_source_is_symmetric(w):
     assert any("DIRECTION_UNKNOWN" in x for x in forward.warnings)
     assert any(e.route_id == "RICK_A_C" for e in graph.adj["C"])  # symmetric source: both directions
     assert not any("DIRECTION_UNKNOWN" in x for e in graph.adj["C"] if e.route_id == "RICK_A_C" for x in e.warnings)
+
+
+def test_unknown_direction_assumed_two_way_when_configured(w, monkeypatch):
+    monkeypatch.setattr(rs, "ASSUME_REVERSE_UNKNOWN", True)
+    w.get(RouteEdge, "BUS_C_X").direction = "unknown"
+    w.get(RouteEdge, "BUS_C_X").source_dataset = "co-ordination"
+    w.commit()
+    graph = rs.build_graph(w)
+    back = next(e for e in graph.adj["X"] if e.route_id == "BUS_C_X")
+    assert any("DIRECTION_ASSUMED" in x for x in back.warnings)
 
 
 # ---- route options -------------------------------------------------------------------------------
@@ -405,9 +416,9 @@ def test_student_preference_changes_cheapest_choice(w):
                     time_normal_min=5))
     w.add(RouteEdge(route_id="BUS_A_X", mode="local_bus", origin_hub="A", destination_hub="X", direction="bidirectional",
                     time_normal_min=5))
-    w.add(FareMatrixRow(mode="rickshaw", from_hub="A", to_hub="X", normal_low_bdt=14, normal_high_bdt=20))
-    w.add(FareMatrixRow(mode="local_bus", from_hub="A", to_hub="X", normal_low_bdt=20, normal_high_bdt=20,
-                        student_fare_low_bdt=10, student_fare_high_bdt=10))
+    w.add(FareMatrixRow(mode="rickshaw", from_hub="A", to_hub="X", normal_low_bdt=20, normal_high_bdt=25))
+    w.add(FareMatrixRow(mode="local_bus", from_hub="A", to_hub="X", normal_low_bdt=30, normal_high_bdt=30,
+                        student_fare_low_bdt=15, student_fare_high_bdt=15))
     w.commit()
     assert ids(rs.search_routes(w, "Hub A", "Hub X", optimize="cheapest")["routes"][0]) == ["RICK_A_X"]
     assert ids(rs.search_routes(w, "Hub A", "Hub X", optimize="cheapest", prefer_student_fare=True)["routes"][0]) == ["BUS_A_X"]

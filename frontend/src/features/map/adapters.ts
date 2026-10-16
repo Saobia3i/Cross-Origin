@@ -1,4 +1,5 @@
 import type { LatLngTuple } from 'leaflet';
+import { MRT_STATIONS } from './geo';
 import type { MapAlert, MapEdge, MapHub, MapLeg, MapRoute, TransitMode } from './types';
 
 /**
@@ -36,6 +37,35 @@ export function toMapHubs(raw: unknown): MapHub[] {
       type: str(r.type) ?? 'hub',
       aliases: Array.isArray(r.aliases) ? r.aliases.filter((a): a is string => typeof a === 'string') : [],
     }];
+  });
+}
+
+/**
+ * Hubs the backend has no coordinates for are placed from data we already hold — never invented:
+ * the first/last point of a dataset route geometry that touches the hub, else the matching MRT-6 station.
+ */
+export function deriveMissingHubs(raw: unknown, placed: MapHub[]): MapHub[] {
+  const have = new Set(placed.map((h) => h.id));
+  const geo = new Map<string, LatLngTuple>();
+  for (const r of unwrapList(raw, 'routes')) {
+    if (!isRec(r)) continue;
+    const line = asLine(r.geometry);
+    const from = str(r.origin_hub), to = str(r.destination_hub);
+    if (!line || !from || !to) continue;
+    if (!geo.has(from)) geo.set(from, line[0]);
+    if (!geo.has(to)) geo.set(to, line[line.length - 1]);
+  }
+  const stations = new Map(MRT_STATIONS.map((s) => [norm(s.name), s]));
+  return unwrapList(raw, 'hubs').flatMap((r): MapHub[] => {
+    if (!isRec(r)) return [];
+    const id = str(r.hub_id);
+    if (!id || have.has(id)) return [];
+    const name = str(r.name) ?? id;
+    const st = r.type === 'metro_station' ? stations.get(norm(name)) : undefined;
+    const pt: LatLngTuple | undefined = st ? [st.lat, st.lng] : geo.get(id);
+    if (!pt) return [];
+    return [{ id, name, nameBn: str(r.name_bn), type: str(r.type) ?? 'hub', lat: pt[0], lng: pt[1],
+      aliases: Array.isArray(r.aliases) ? r.aliases.filter((a): a is string => typeof a === 'string') : [] }];
   });
 }
 
@@ -81,20 +111,26 @@ export function toMapAlerts(raw: unknown): MapAlert[] {
 
 /** GeoJSON-ish or [[lat,lng],…] → Leaflet [lat,lng][]. Returns undefined if not recognisable. */
 function asLine(g: unknown): LatLngTuple[] | undefined {
+  // GeoJSON LineString ({type, coordinates:[[lng,lat],…]}) from /api/transit/network?include_geometry=true
+  if (isRec(g) && Array.isArray(g.coordinates)) {
+    const pts = g.coordinates.filter((p): p is number[] => Array.isArray(p) && p.length >= 2 && typeof p[0] === 'number' && typeof p[1] === 'number');
+    return pts.length >= 2 ? pts.map((p) => [p[1], p[0]] as LatLngTuple) : undefined;
+  }
   if (!Array.isArray(g) || g.length < 2) return undefined;
   const pts = g.filter((p): p is number[] => Array.isArray(p) && p.length >= 2 && typeof p[0] === 'number' && typeof p[1] === 'number');
   return pts.length >= 2 ? pts.map((p) => [p[0], p[1]] as LatLngTuple) : undefined;
 }
 
 /** Accepts store RouteOption (from/to/…), responses.md route option (from_hub/to_hub/…), or {routes:[…]}[0]. */
-export function toMapRoute(raw: unknown, idx: HubIndex): MapRoute | null {
+export function toMapRoute(raw: unknown, idx: HubIndex, edgeGeometry?: Map<string, LatLngTuple[]>): MapRoute | null {
   if (!isRec(raw) || !Array.isArray(raw.legs)) return null;
   const legs = raw.legs.flatMap((l): MapLeg[] => {
     if (!isRec(l)) return [];
     const from = idx.get(str(l.from_hub) ?? str(l.fromHub) ?? str(l.from));
     const to = idx.get(str(l.to_hub) ?? str(l.toHub) ?? str(l.to));
     if (!from || !to) return [];                                     // unknown hub => skip leg, never invent
-    return [{ mode: asMode(l.mode), fromHubId: from.id, toHubId: to.id, routeId: str(l.route_id) ?? str(l.routeId), geometry: asLine(l.geometry) }];
+    return [{ mode: asMode(l.mode), fromHubId: from.id, toHubId: to.id, routeId: str(l.route_id) ?? str(l.routeId),
+      geometry: asLine(l.geometry) ?? edgeGeometry?.get(str(l.route_id) ?? str(l.routeId) ?? '') }];
   });
   return legs.length ? { id: str(raw.route_option_id) ?? str(raw.id) ?? 'route', legs } : null;
 }
@@ -104,7 +140,7 @@ export function toMapRoute(raw: unknown, idx: HubIndex): MapRoute | null {
  * ({broken_segments, affected_segments[{route_id,effect}], recalculated_routes[]}).
  * Anything else (e.g. the frontend's old mock {affected:string[], detour:string}) → no overlay.
  */
-export function toMapSimulation(raw: unknown, idx: HubIndex): { closedRouteIds: string[]; alternativeRoute: MapRoute | null } {
+export function toMapSimulation(raw: unknown, idx: HubIndex, edgeGeometry?: Map<string, LatLngTuple[]>): { closedRouteIds: string[]; alternativeRoute: MapRoute | null } {
   if (!isRec(raw)) return { closedRouteIds: [], alternativeRoute: null };
   const ids = new Set<string>();
   if (Array.isArray(raw.broken_segments)) raw.broken_segments.forEach((x) => { if (typeof x === 'string') ids.add(x); });
@@ -112,5 +148,5 @@ export function toMapSimulation(raw: unknown, idx: HubIndex): { closedRouteIds: 
     if (isRec(x) && x.effect === 'closed' && typeof x.route_id === 'string') ids.add(x.route_id);
   });
   const first = Array.isArray(raw.recalculated_routes) ? raw.recalculated_routes[0] : undefined;
-  return { closedRouteIds: [...ids], alternativeRoute: toMapRoute(first, idx) };
+  return { closedRouteIds: [...ids], alternativeRoute: toMapRoute(first, idx, edgeGeometry) };
 }

@@ -10,6 +10,7 @@ import { useTranslation } from 'react-i18next';
 import { useTripStore } from '../../store/trip';
 import { useQuery } from '@tanstack/react-query';
 import { searchTrips, fetchNetwork } from '../../api/endpoints';
+import type { ApiError } from '../../api/client';
 
 const TripSearchForm: React.FC = () => {
   const { t } = useTranslation();
@@ -34,9 +35,14 @@ const TripSearchForm: React.FC = () => {
         optimize: sortBy,
       });
       setResults(data.routes ?? []);
+      if (!data.routes?.length) {
+        setError(data.no_route_reason?.message ?? 'No route found between these places.');
+      }
     } catch (e) {
       setResults([]);
-      setError((e as Error).message);
+      const err = e as ApiError;
+      const hint = err.code === 'UNKNOWN_HUB' ? ' Pick a place from the list.' : '';
+      setError(err.message + hint);
     } finally {
       setLoading(false);
     }
@@ -83,7 +89,7 @@ const TripSearchForm: React.FC = () => {
               color="primary"
             />
           }
-          label={<Typography variant="caption" fontWeight={600}>{t('fare.student')}</Typography>}
+          label={<Typography variant="caption" sx={{ fontWeight: 600 }}>{t('fare.student')}</Typography>}
           sx={{ m: 0, flexShrink: 0 }}
         />
       </Box>

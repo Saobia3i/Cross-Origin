@@ -9,8 +9,9 @@ import type {
 export const fetchCatalog = () => apiClient.get('/api/catalog').then(r => r.data);
 
 // ── Transit ──
+// Geometry is included so the map can draw dataset route lines (GeoJSON LineString, lng/lat).
 export const fetchNetwork = () =>
-  apiClient.get<NetworkData>('/api/transit/network').then(r => r.data);
+  apiClient.get<NetworkData>('/api/transit/network', { params: { include_geometry: true } }).then(r => r.data);
 
 // ── Reports / alerts ──
 export const fetchReports = (params?: { status?: string; affected_hub?: string; limit?: number }) =>

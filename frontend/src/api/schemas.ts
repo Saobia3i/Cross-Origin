@@ -106,12 +106,12 @@ export interface RouteOption {
   route_option_id: string;
   rank_label: string;
   also_best_for: string[];
-  total_regular_fare_min_bdt: number;
-  total_regular_fare_max_bdt: number;
-  total_student_fare_min_bdt: number;
-  total_student_fare_max_bdt: number;
-  total_travel_time_min: number;
-  total_duration_min: number;
+  total_regular_fare_min_bdt: number | null;
+  total_regular_fare_max_bdt: number | null;
+  total_student_fare_min_bdt: number | null;
+  total_student_fare_max_bdt: number | null;
+  total_travel_time_min: number | null;
+  total_duration_min: number | null;
   transfers: number;
   leg_count: number;
   within_budget: boolean;
@@ -125,6 +125,8 @@ export interface RouteOption {
 export interface TripSearchData {
   query_echo: Record<string, unknown>;
   routes: RouteOption[];
+  no_route_reason?: { code: string; message: string; suggestions?: unknown[] } | null;
+  warnings?: string[];
   [k: string]: unknown;
 }
 

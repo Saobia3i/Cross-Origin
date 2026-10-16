@@ -142,7 +142,8 @@ def test_unknown_line_name_fails(world):
     assert codes(r) == ["UNKNOWN_ROUTE_ID"] and "Super Express" in r.violations[0].message
 
 
-def test_closed_or_wrong_direction_route_is_not_available(world):
+def test_closed_or_wrong_direction_route_is_not_available(world, monkeypatch):
+    monkeypatch.setattr("app.services.routing_service.ASSUME_REVERSE_UNKNOWN", False)
     r = gs.validate_route_payload(world, {"legs": [leg("LOCAL_BUS_FARMGATE_UTTARA_NORTH", "local_bus", "FARMGATE", "UTTARA_NORTH")]})
     assert codes(r) == ["ROUTE_NOT_AVAILABLE"]  # closed by the dataset
     r = gs.validate_route_payload(world, {"legs": [leg(MRT_M_F, "mrt", "FARMGATE", "MIRPUR_10")]})  # forward-only edge

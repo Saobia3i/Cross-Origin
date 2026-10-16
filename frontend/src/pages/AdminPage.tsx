@@ -1,6 +1,6 @@
 import React from 'react';
 import {
-  Container, Typography, Box, Grid, Paper, Button, Chip,
+  Container, Typography, Box, Paper, Button,
 } from '@mui/material';
 import BarChartIcon from '@mui/icons-material/BarChart';
 import BlockIcon from '@mui/icons-material/Block';
@@ -19,7 +19,7 @@ const StatCard: React.FC<{ label: string; value: number; icon: React.ReactNode; 
   <Paper elevation={0} sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 2, p: 2.5 }}>
     <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
       <Box>
-        <Typography variant="caption" color="text.secondary" fontWeight={600}>{label}</Typography>
+        <Typography variant="caption" sx={{ fontWeight: 600, color: "text.secondary" }}>{label}</Typography>
         <Typography variant="h4" sx={{ fontFamily: 'var(--font-mono)', fontWeight: 700, color, mt: 0.5 }}>
           {value}
         </Typography>
@@ -53,7 +53,7 @@ const ModerationQueue: React.FC = () => {
 
   return (
     <Box>
-      <Typography variant="subtitle1" fontWeight={700} sx={{ fontFamily: 'var(--font-heading)', mb: 1.5 }}>
+      <Typography variant="subtitle1" sx={{ fontWeight: 700, fontFamily: 'var(--font-heading)', mb: 1.5 }}>
         {t('admin.moderation')} ({pending.length})
       </Typography>
       {pending.length === 0 && <Typography variant="body2" color="text.secondary">No pending reports.</Typography>}
@@ -63,7 +63,7 @@ const ModerationQueue: React.FC = () => {
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1 }}>
             <Box>
               <StatusBadge status={a.status} />
-              <Typography variant="body2" fontWeight={500} sx={{ mt: 0.5 }}>{a.description}</Typography>
+              <Typography variant="body2" sx={{ fontWeight: 500, mt: 0.5 }}>{a.description}</Typography>
               <Typography variant="caption" color="text.secondary">{a.affected_hub} · ↑{a.upvotes} ↓{a.downvotes}</Typography>
             </Box>
           </Box>

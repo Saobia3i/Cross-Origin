@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import {
-  Box, TextField, IconButton, Typography, Paper, Button,
-  Divider, Drawer,
+  Box, TextField, IconButton, Typography, Button,
+  Drawer,
 } from '@mui/material';
 import SendIcon from '@mui/icons-material/Send';
 import CloseIcon from '@mui/icons-material/Close';
@@ -72,7 +72,7 @@ const ChatPanel: React.FC = () => {
   const { t } = useTranslation();
   const { lang } = useUIStore();
   const { messages, isThinking, addMessage, setThinking } = useChatStore();
-  const setResults = useTripStore((s) => s.setResults);
+  const setAiResults = useTripStore((s) => s.setAiResults);
   const [input, setInput] = useState('');
   const bottomRef = useRef<HTMLDivElement>(null);
 
@@ -90,8 +90,8 @@ const ChatPanel: React.FC = () => {
       const res = await sendChat(text, lang as 'en' | 'bn');
       const sp = res.structured_payload ?? {};
       const draft = sp.draft_report as { draft_id?: string } | undefined;
-      // Route options come from the backend engine (already grounded); surface them in the trip panel.
-      if (Array.isArray(sp.routes) && sp.routes.length) setResults(sp.routes);
+      // Chat route options are shown as AI-generated options; legs and map follow them.
+      if (Array.isArray(sp.routes) && sp.routes.length) setAiResults(sp.routes);
       addMessage({
         id:        crypto.randomUUID(),
         role:      'assistant',
@@ -122,7 +122,7 @@ const ChatPanel: React.FC = () => {
       <Box sx={{ p: 2, borderBottom: '1px solid', borderColor: 'divider', display: 'flex', alignItems: 'center', gap: 1.5 }}>
         <Box sx={{ width: 36, height: 36, borderRadius: 1, background: '#E6B800', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, border: '2px solid #BF9A00' }}>🤖</Box>
         <Box>
-          <Typography variant="subtitle2" fontWeight={700} sx={{ fontFamily: 'var(--font-heading)' }}>
+          <Typography variant="subtitle2" sx={{ fontWeight: 700, fontFamily: 'var(--font-heading)' }}>
             {t('chat.title')}
           </Typography>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
@@ -192,7 +192,7 @@ const ChatDrawer: React.FC = () => {
       anchor="right"
       open={isOpen}
       onClose={toggleChat}
-      PaperProps={{ sx: { width: { xs: '100vw', sm: 380 }, height: '100%' } }}
+      slotProps={{ paper: { sx: { width: { xs: '100vw', sm: 380 }, height: '100%' } } }}
     >
       <Box sx={{ display: 'flex', justifyContent: 'flex-end', p: 1 }}>
         <IconButton onClick={toggleChat} size="small"><CloseIcon /></IconButton>

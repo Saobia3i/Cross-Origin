@@ -88,11 +88,12 @@ def test_metro_unknown_pair_fails_clearly(db):
 
 
 # ---- student fare ---------------------------------------------------------------
-@pytest.mark.parametrize("regular_fare,expected", [(30, 15), (15, 10), (10, 10), (21, 11), (100, 50)])
+# Fares of 20 BDT or less stay as they are; only fares above 20 get the student discount.
+@pytest.mark.parametrize("regular_fare,expected", [(30, 15), (15, 15), (10, 10), (20, 20), (21, 11), (100, 50)])
 def test_local_bus_student_fare(db, regular_fare, expected):
     student, applies = fs.calculate_student_fare(
         db, "local_bus", make_range(regular_fare, regular_fare, "formula"), "normal", None)
-    assert applies is True
+    assert applies is (regular_fare > 20)
     assert (student.min_bdt, student.max_bdt) == (expected, expected)
 
 

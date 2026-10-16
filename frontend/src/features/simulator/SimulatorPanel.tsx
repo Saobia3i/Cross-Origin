@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import {
   Box, Typography, Paper, Button, MenuItem, Select, FormControl,
-  InputLabel, Divider, Chip,
+  InputLabel, Chip,
 } from '@mui/material';
 import ThunderstormIcon from '@mui/icons-material/Thunderstorm';
 import DirectionsCarIcon from '@mui/icons-material/DirectionsCar';
@@ -85,7 +85,7 @@ const SimulatorPanel: React.FC = () => {
             }}
           >
             <Icon sx={{ color, fontSize: 32, mb: 1 }} />
-            <Typography variant="caption" fontWeight={600} sx={{ display: 'block', color: selected === key ? color : 'text.primary' }}>
+            <Typography variant="caption" sx={{ fontWeight: 600, display: 'block', color: selected === key ? color : 'text.primary' }}>
               {label}
             </Typography>
           </Paper>
@@ -121,7 +121,7 @@ const SimulatorPanel: React.FC = () => {
           <Box>
             {result.broken_segments.length > 0 && (
               <>
-                <Typography variant="subtitle2" fontWeight={700} sx={{ fontFamily: 'var(--font-heading)', mb: 1 }}>
+                <Typography variant="subtitle2" sx={{ fontWeight: 700, fontFamily: 'var(--font-heading)', mb: 1 }}>
                   {t('sim.affected')}
                 </Typography>
                 <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', mb: 2.5 }}>
@@ -138,7 +138,7 @@ const SimulatorPanel: React.FC = () => {
                   { label: t('sim.after'),  min: c.new_fare_min,      max: c.new_fare_max,      dur: c.new_duration_min,      color: '#E11D48', bg: '#FFE4E6' },
                 ].map(({ label, min, max, dur, color, bg }) => (
                   <Paper key={label} elevation={0} sx={{ flex: 1, p: 2, border: '1px solid', borderColor: 'divider', borderRadius: 2, backgroundColor: bg }}>
-                    <Typography variant="caption" fontWeight={700} sx={{ color, display: 'block', mb: 1 }}>{label}</Typography>
+                    <Typography variant="caption" sx={{ fontWeight: 700, color, display: 'block', mb: 1 }}>{label}</Typography>
                     <FareText min={min} max={max} size="lg" sx={{ color, display: 'block', mb: 0.5 }} />
                     <Typography variant="body2" sx={{ fontFamily: 'var(--font-mono)', color }}>{dur} min</Typography>
                   </Paper>
@@ -150,7 +150,7 @@ const SimulatorPanel: React.FC = () => {
               </Typography>
             )}
             <Paper elevation={0} sx={{ p: 2, border: '1px solid', borderColor: 'divider', borderRadius: 2, backgroundColor: 'background.default' }}>
-              <Typography variant="caption" fontWeight={700} color="primary.main">{t('sim.detour')}</Typography>
+              <Typography variant="caption" sx={{ fontWeight: 700, color: "primary.main" }}>{t('sim.detour')}</Typography>
               <Typography variant="body2" sx={{ mt: 0.5 }}>
                 {c.rerouted ? 'Rerouted' : 'No reroute needed'}{c.note ? ' - ' + c.note : ''}
               </Typography>

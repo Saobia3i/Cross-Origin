@@ -1,7 +1,7 @@
 import React from 'react';
 import {
   Box, Typography, Paper, Divider, Switch, FormControlLabel,
-  Table, TableBody, TableCell, TableRow, Chip,
+  Chip,
 } from '@mui/material';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import InfoIcon from '@mui/icons-material/Info';
@@ -27,7 +27,7 @@ const RouteDetail: React.FC = () => {
             <Switch size="small" checked={studentMode}
               onChange={(e) => setSearch({ studentMode: e.target.checked })} color="primary" />
           }
-          label={<Typography variant="caption" fontWeight={600}>{t('fare.student')}</Typography>}
+          label={<Typography variant="caption" sx={{ fontWeight: 600 }}>{t('fare.student')}</Typography>}
           sx={{ m: 0 }}
         />
       </Box>
@@ -52,9 +52,9 @@ const RouteDetail: React.FC = () => {
                 <Box sx={{ flex: 1, pb: 1 }}>
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
                     <ModePill mode={leg.mode} />
-                    <Typography variant="body2" fontWeight={600}>{leg.from_hub}</Typography>
+                    <Typography variant="body2" sx={{ fontWeight: 600 }}>{leg.from_hub}</Typography>
                     <ArrowForwardIcon sx={{ fontSize: 14, color: 'text.disabled' }} />
-                    <Typography variant="body2" fontWeight={600}>{leg.to_hub}</Typography>
+                    <Typography variant="body2" sx={{ fontWeight: 600 }}>{leg.to_hub}</Typography>
                   </Box>
                   <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
                     <FareText min={fmin} max={fmax} size="sm" />
@@ -82,7 +82,7 @@ const RouteDetail: React.FC = () => {
       {/* Fare summary */}
       <Divider sx={{ my: 2 }} />
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <Typography fontWeight={600}>{t('fare.total')}</Typography>
+        <Typography sx={{ fontWeight: 600 }}>{t('fare.total')}</Typography>
         <FareText
           min={studentMode ? selectedRoute.total_student_fare_min_bdt : selectedRoute.total_regular_fare_min_bdt}
           max={studentMode ? selectedRoute.total_student_fare_max_bdt : selectedRoute.total_regular_fare_max_bdt}
