@@ -120,7 +120,7 @@ const ReportForm: React.FC = () => {
         <Controller name="incident_time" control={control} render={({ field }) => (
           <TextField {...field} label="Incident time" size="small" type="datetime-local"
             error={!!errors.incident_time} helperText={errors.incident_time?.message}
-            InputLabelProps={{ shrink: true }}
+            slotProps={{ inputLabel: { shrink: true } }}
           />
         )} />
 

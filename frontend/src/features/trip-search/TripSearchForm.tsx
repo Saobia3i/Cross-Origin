@@ -53,7 +53,7 @@ const TripSearchForm: React.FC = () => {
         onInputChange={(_, v) => setSearch({ origin: v })}
         renderInput={(params) => (
           <TextField {...params} label={t('trip.from')} size="small"
-            InputProps={{ ...params.InputProps, startAdornment: <MyLocationIcon sx={{ fontSize: 16, color: 'primary.main', mr: 0.5 }} /> }}
+            slotProps={{ input: { ...params.InputProps, startAdornment: <MyLocationIcon sx={{ fontSize: 16, color: 'primary.main', mr: 0.5 }} /> } }}
           />
         )}
       />
@@ -72,7 +72,7 @@ const TripSearchForm: React.FC = () => {
           value={budget ?? ''}
           onChange={(e) => setSearch({ budget: e.target.value ? Number(e.target.value) : null })}
           sx={{ flex: 1 }}
-          inputProps={{ min: 0 }}
+          slotProps={{ htmlInput: { min: 0 } }}
         />
         <FormControlLabel
           control={
