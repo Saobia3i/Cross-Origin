@@ -29,8 +29,8 @@ services:
   - type: web
     name: dhakapath-backend
     runtime: python
-    # plan: free is no longer available for web services on Render (retired 2024)
-    # You will be prompted to choose a plan (Starter = $7/mo) during Blueprint setup
+    # Free plan: sleeps after 15 min idle, first request then takes ~30s.
+    plan: free
     rootDir: backend
     buildCommand: pip install -r requirements.txt
     startCommand: bash render_start.sh
