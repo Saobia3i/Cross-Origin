@@ -1,0 +1,129 @@
+# render.yaml — Render Blueprint for DhakaPath (Cross-Origin)
+# Docs: https://render.com/docs/blueprint-spec
+#
+# Services defined here:
+#   1. dhakapath-backend   — FastAPI web service (Python)
+#   2. dhakapath-frontend  — React/Vite static site
+#   3. dhakapath-db        — PostgreSQL (free tier)
+#
+# Deploy steps:
+#   1. Push this file to your GitHub repo root
+#   2. Go to https://dashboard.render.com → New → Blueprint
+#   3. Connect your repo — Render will detect this file automatically
+#   4. Fill in the secret env vars marked `sync: false` in the dashboard
+#   5. Click "Apply"
+#
+# After first deploy, note down the backend URL (e.g. https://dhakapath-backend.onrender.com)
+# and set it as VITE_API_BASE_URL in the frontend service environment on the dashboard.
+
+databases:
+  - name: dhakapath-db
+    databaseName: dhakapath
+    user: dhakapath
+    plan: free               # Render free PostgreSQL (90-day expiry on free tier)
+
+services:
+  # ─────────────────────────────────────────────
+  # 1. BACKEND — FastAPI
+  # ─────────────────────────────────────────────
+  - type: web
+    name: dhakapath-backend
+    runtime: python
+    plan: free
+    rootDir: backend
+    buildCommand: pip install -r requirements.txt
+    startCommand: bash render_start.sh
+    healthCheckPath: /health
+
+    envVars:
+      # Render injects DATABASE_URL automatically from the linked database
+      - key: DATABASE_URL
+        fromDatabase:
+          name: dhakapath-db
+          property: connectionString
+
+      - key: JWT_SECRET
+        generateValue: true      # Render auto-generates a secure random value
+
+      - key: JWT_ALGORITHM
+        value: HS256
+
+      - key: ACCESS_TOKEN_EXPIRE_MINUTES
+        value: "1440"
+
+      # Set this to your frontend URL after first deploy, e.g.:
+      # https://dhakapath-frontend.onrender.com
+      - key: CORS_ORIGINS
+        value: https://dhakapath-frontend.onrender.com
+
+      - key: DEMO_SECRET
+        generateValue: true
+
+      # LLM — set your actual key in the Render dashboard (sync: false = secret)
+      - key: OPENROUTER_API_KEY
+        sync: false              # paste your key in the Render dashboard
+
+      - key: GEMINI_API_KEY
+        sync: false
+
+      - key: GROQ_API_KEY
+        sync: false
+
+      - key: LLM_PROVIDER
+        value: openrouter
+
+      - key: OPENROUTER_MODEL
+        value: meta-llama/llama-3.1-8b-instruct:free
+
+      - key: GEMINI_MODEL
+        value: gemini-1.5-flash
+
+      - key: GROQ_MODEL
+        value: llama-3.1-8b-instant
+
+      - key: LLM_TIMEOUT_S
+        value: "8"
+
+      - key: CHAT_LLM_REWRITE
+        value: "true"
+
+      - key: CHAT_ALLOW_DEMO_SIMULATION
+        value: "true"
+
+      - key: LLM_CACHE_ENABLED
+        value: "true"
+
+      # Upload dir: use /tmp on Render free tier (ephemeral but functional for demo)
+      - key: UPLOAD_DIR
+        value: /tmp/dhakapath/uploads
+
+      - key: MAX_UPLOAD_IMAGES
+        value: "5"
+
+  # ─────────────────────────────────────────────
+  # 2. FRONTEND — React / Vite static site
+  # ─────────────────────────────────────────────
+  - type: web
+    name: dhakapath-frontend
+    runtime: static
+    plan: free
+    rootDir: frontend
+    buildCommand: npm ci && npm run build
+    staticPublishPath: ./dist
+
+    # SPA routing: all paths fall through to index.html
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
+
+    envVars:
+      # Point to the deployed backend — update this after backend is live
+      - key: VITE_API_BASE_URL
+        value: https://dhakapath-backend.onrender.com
+
+      - key: VITE_USE_MOCKS
+        value: "false"
+
+      - key: VITE_EVENT_POLL_INTERVAL_MS
+        value: "12000"

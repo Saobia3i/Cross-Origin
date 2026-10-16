@@ -1,6 +1,20 @@
 # 🔄 Update Log — Cross-Origin / DhakaPath
 
 > **Date:** 2026-10-16  
+
+## Bonus Features — Community Tools
+
+### Signboard & Notice Digitization
+- New **Community** page lets users upload a JPG, PNG, or WebP photo of a bus signboard, fare chart, or handwritten route note.
+- `POST /api/digitize/signboard` sends the image to configured Gemini Vision and returns a reviewable structured draft: route name, operator, mode, origin/destination, stops, fare rows, OCR text, and confidence score.
+- The result is intentionally a review draft: community signage does not silently overwrite verified transit data.
+- Configure `GEMINI_API_KEY` in `backend/.env` to enable live image extraction. Upload size is limited to 8 MB.
+
+### Commuter Ride-Share & Fare Bot
+- Added the **Hub ride-share board** under `/community`, backed by the existing rideshare API.
+- Users can filter rides by hub, post CNG/rickshaw rides, join or leave open rides, and see remaining seats.
+- The fare bot displays the equal per-person estimated split and recalculates automatically whenever participants join or leave.
+- Posting, joining, and leaving require a verified account; browsing remains available to guests.
 > **Session:** Local dev environment setup & CORS fix
 
 ---
