@@ -10,6 +10,7 @@ import RefreshIcon from '@mui/icons-material/Refresh';
 import { useTranslation } from 'react-i18next';
 import { runSimulation, resetSimulation } from '../../api/endpoints';
 import { FareText } from '../../components/FareText';
+import { useMapOverlay } from '../map/mapOverlay';
 
 const HUBS = [
   'Motijheel', 'Banasree', 'Malibagh', 'Shahbagh', 'Farmgate',
@@ -41,6 +42,7 @@ const SimulatorPanel: React.FC = () => {
     setLoading(true);
     try {
       const res = await runSimulation(selected, zone);
+      useMapOverlay.getState().setSimulation(res);   // map draws closed roads + detour
       setResult(res as SimResult);
     } catch {
       // Use mock result for demo
@@ -57,6 +59,7 @@ const SimulatorPanel: React.FC = () => {
 
   const handleReset = async () => {
     try { await resetSimulation(); } catch {}
+    useMapOverlay.getState().clear();
     setResult(null);
     setSelected(null);
   };

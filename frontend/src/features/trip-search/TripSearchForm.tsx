@@ -53,7 +53,7 @@ const TripSearchForm: React.FC = () => {
         onInputChange={(_, v) => setSearch({ origin: v })}
         renderInput={(params) => (
           <TextField {...params} label={t('trip.from')} size="small"
-            slotProps={{ input: { ...params.InputProps, startAdornment: <MyLocationIcon sx={{ fontSize: 16, color: 'primary.main', mr: 0.5 }} /> } }}
+            slotProps={{ ...params.slotProps, input: { ...params.slotProps.input, startAdornment: <MyLocationIcon sx={{ fontSize: 16, color: 'primary.main', mr: 0.5 }} /> } }}
           />
         )}
       />

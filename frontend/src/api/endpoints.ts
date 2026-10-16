@@ -6,8 +6,14 @@ export const fetchNetwork = () =>
   apiClient.get<{ hubs: Hub[]; routes: RouteEdge[] }>('/api/transit/network').then(r => r.data);
 
 // ── Alerts ─────────────────────────────────────────────────────────
+// Accepts a bare array or the responses.md payload {alerts:[…]}. AlertsFeed dereferences images/votes unguarded,
+// so missing fields are defaulted here (stop-gap until the backend sends them — docx §7.3 #4).
+const withAlertDefaults = (a: Alert): Alert =>
+  Object.assign({ images: [], upvotes: 0, downvotes: 0, my_vote: null, comments_count: 0 }, a);
+
 export const fetchAlerts = () =>
-  apiClient.get<Alert[]>('/api/alerts/active').then(r => r.data);
+  apiClient.get<Alert[] | { alerts: Alert[] }>('/api/alerts/active')
+    .then(r => (Array.isArray(r.data) ? r.data : r.data.alerts ?? []).map(withAlertDefaults));
 
 export const voteAlert = (alertId: string, value: 1 | -1) =>
   apiClient.post(`/api/reports/${alertId}/vote`, { value }).then(r => r.data);
@@ -31,7 +37,8 @@ export interface TripSearchParams {
   optimize:     'cheapest' | 'fastest' | 'fewest';
 }
 export const searchTrips = (params: TripSearchParams) =>
-  apiClient.post<RouteOption[]>('/api/trips/search', params).then(r => r.data);
+  apiClient.post<RouteOption[] | { routes: RouteOption[] }>('/api/trips/search', params)
+    .then(r => (Array.isArray(r.data) ? r.data : r.data.routes ?? []));
 
 // ── Fare estimate ──────────────────────────────────────────────────
 export const estimateFare = (routeId: string, studentMode: boolean) =>
