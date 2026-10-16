@@ -1,6 +1,7 @@
 import React from 'react';
 import { Container, Box } from '@mui/material';
 import SimulatorPanel from '../features/simulator/SimulatorPanel';
+import ConnectedMap from '../features/map/ConnectedMap';
 
 const SimulatorPage: React.FC = () => (
   <Container maxWidth="md" sx={{ py: 3 }}>
@@ -10,16 +11,8 @@ const SimulatorPage: React.FC = () => (
       gap: 3,
     }}>
       <SimulatorPanel />
-      {/* Map snapshot — teammate fills this */}
-      <Box sx={{
-        background: 'linear-gradient(135deg,#0A0F1C,#0F2340)',
-        borderRadius: 3, minHeight: 400,
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-        border: '1px dashed', borderColor: 'divider',
-      }}>
-        <Box sx={{ textAlign: 'center', color: '#647080', fontFamily: 'var(--font-mono)', fontSize: 13 }}>
-          Map snapshot<br />(teammate)
-        </Box>
+      <Box sx={{ borderRadius: 3, overflow: 'hidden', border: '1px solid', borderColor: 'divider', height: { xs: 360, md: 520 } }}>
+        <ConnectedMap locate={false} />
       </Box>
     </Box>
   </Container>

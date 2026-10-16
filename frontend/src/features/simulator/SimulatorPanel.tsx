@@ -14,6 +14,7 @@ import { fetchNetwork } from '../../api/endpoints';
 import { useQuery } from '@tanstack/react-query';
 import { useTripStore } from '../../store/trip';
 import type { ScenarioType, SimulationResult } from '../../api/schemas';
+import { useMapOverlay } from '../map/mapOverlay';
 
 const SimulatorPanel: React.FC = () => {
   const { t } = useTranslation();
@@ -44,6 +45,7 @@ const SimulatorPanel: React.FC = () => {
         destination: destination || undefined,
         prefer_student_fare: studentMode,
       });
+      useMapOverlay.getState().setSimulation(res);   // map draws closed roads + detour
       setResult(res);
     } catch (e) {
       setResult(null);
@@ -55,6 +57,7 @@ const SimulatorPanel: React.FC = () => {
 
   const handleReset = async () => {
     try { await resetSimulation(); } catch { /* nothing active */ }
+    useMapOverlay.getState().clear();
     setResult(null);
     setError('');
     setSelected(null);

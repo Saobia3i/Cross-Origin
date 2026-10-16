@@ -1,46 +1,27 @@
 import React from 'react';
-import { Box, Grid } from '@mui/material';
+import { Box } from '@mui/material';
 import TripSearchForm from '../features/trip-search/TripSearchForm';
 import RouteResultsList from '../features/trip-search/RouteResultsList';
 import RouteDetail from '../features/trip-search/RouteDetail';
 import AlertsFeed from '../features/alerts/AlertsFeed';
 import { useTripStore } from '../store/trip';
-
-// Map placeholder — teammate will replace with real Leaflet MapView
-const MapPlaceholder: React.FC = () => (
-  <Box sx={{
-    width: '100%', height: '100%', minHeight: 400,
-    background: 'linear-gradient(160deg, #3A3930 0%, #2A2920 50%, #1C1C18 100%)',
-    display: 'flex', alignItems: 'center', justifyContent: 'center',
-    borderRadius: 0, position: 'relative', overflow: 'hidden',
-  }}>
-    {/* Grid pattern */}
-    <Box sx={{
-      position: 'absolute', inset: 0, opacity: 0.08,
-      backgroundImage: 'linear-gradient(#22D3EE 1px, transparent 1px), linear-gradient(90deg, #22D3EE 1px, transparent 1px)',
-      backgroundSize: '40px 40px',
-    }} />
-    <Box sx={{ textAlign: 'center', zIndex: 1 }}>
-      <Box sx={{ fontSize: 64, mb: 1 }}>🗺️</Box>
-      <Box sx={{ color: '#E6B800', fontFamily: 'var(--font-mono)', fontSize: 14 }}>
-        Map component (Leaflet + OSM)
-      </Box>
-      <Box sx={{ color: '#647080', fontSize: 12, mt: 0.5 }}>
-        Teammate's MapView goes here
-      </Box>
-    </Box>
-  </Box>
-);
+import ConnectedMap from '../features/map/ConnectedMap';
 
 const HomePage: React.FC = () => {
   const { selectedRoute, results } = useTripStore();
 
   return (
-    <Box sx={{ height: 'calc(100vh - 56px)', display: 'flex', overflow: 'hidden' }}>
+    <Box sx={{
+      height: { xs: 'calc(100dvh - 56px - 60px)', md: 'calc(100dvh - 56px)' },
+      display: 'flex', flexDirection: { xs: 'column', md: 'row' }, overflow: 'hidden',
+    }}>
       {/* Left panel */}
       <Box sx={{
         width: { xs: '100%', md: 380 },
-        display: { xs: selectedRoute ? 'none' : 'flex', md: 'flex' },
+        order: { xs: 2, md: 0 },
+        flex: { xs: '0 0 auto', md: '0 0 380px' },
+        maxHeight: { xs: selectedRoute ? '38%' : '46%', md: 'none' },
+        display: 'flex',
         flexDirection: 'column',
         borderRight: '1px solid',
         borderColor: 'divider',
@@ -55,8 +36,8 @@ const HomePage: React.FC = () => {
       </Box>
 
       {/* Center map */}
-      <Box sx={{ flex: 1, display: { xs: 'block', md: 'block' } }}>
-        <MapPlaceholder />
+      <Box sx={{ flex: 1, minWidth: 0, minHeight: 0, order: { xs: 1, md: 0 }, position: 'relative' }}>
+        <ConnectedMap />
       </Box>
 
       {/* Right panel — desktop alerts strip */}
