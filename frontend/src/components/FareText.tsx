@@ -4,19 +4,24 @@ import type { TypographyProps } from '@mui/material/Typography';
 import { useTranslation } from 'react-i18next';
 
 interface Props extends TypographyProps {
-  amount: number;
+  amount?: number;
+  /** Fare range in BDT. When min !== max it renders as a range (rickshaw/CNG/estimates). */
+  min?: number;
+  max?: number;
   size?: 'sm' | 'md' | 'lg';
   showLabel?: boolean;
 }
 
-export const FareText: React.FC<Props> = ({ amount, size = 'md', showLabel = false, sx, ...rest }) => {
+export const FareText: React.FC<Props> = ({ amount, min, max, size = 'md', showLabel = false, sx, ...rest }) => {
   const { t, i18n } = useTranslation();
   const isBn = i18n.language === 'bn';
 
   const fontSizeMap = { sm: '0.875rem', md: '1rem', lg: '1.25rem' };
-  const formatted = isBn
-    ? `৳${amount.toLocaleString('bn-BD')}`
-    : `৳${amount.toLocaleString('en-BD')}`;
+  const loc = isBn ? 'bn-BD' : 'en-BD';
+  const fmt = (n: number) => Math.round(n).toLocaleString(loc);
+  const lo = min ?? amount ?? 0;
+  const hi = max ?? amount ?? lo;
+  const formatted = Math.round(lo) === Math.round(hi) ? `৳${fmt(lo)}` : `৳${fmt(lo)}–${fmt(hi)}`;
 
   return (
     <Typography

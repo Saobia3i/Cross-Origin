@@ -6,11 +6,12 @@ import { useTranslation } from 'react-i18next';
 import { useTripStore } from '../../store/trip';
 import { ModePill } from '../../components/ModePill';
 import { FareText } from '../../components/FareText';
-import { GroundingBadge, EmptyState } from '../../components/Feedback';
+import { GroundingBadge } from '../../components/Feedback';
 import type { RouteOption } from '../../api/schemas';
 
 const RouteCard: React.FC<{ route: RouteOption; selected: boolean; onClick: () => void }> = ({ route, selected, onClick }) => {
   const { t } = useTranslation();
+  const studentMode = useTripStore((s) => s.studentMode);
   return (
     <Paper
       elevation={0}
@@ -27,7 +28,7 @@ const RouteCard: React.FC<{ route: RouteOption; selected: boolean; onClick: () =
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, flexWrap: 'wrap', mb: 1.5 }}>
         {route.legs.map((leg, i) => (
           <React.Fragment key={i}>
-            <ModePill mode={leg.mode as any} />
+            <ModePill mode={leg.mode} />
             {i < route.legs.length - 1 && <ArrowForwardIcon sx={{ fontSize: 14, color: 'text.disabled' }} />}
           </React.Fragment>
         ))}
@@ -36,21 +37,26 @@ const RouteCard: React.FC<{ route: RouteOption; selected: boolean; onClick: () =
       {/* Stats row */}
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, flexWrap: 'wrap' }}>
         <Box>
-          <FareText amount={route.total_fare} size="lg" />
+          <FareText
+            min={studentMode ? route.total_student_fare_min_bdt : route.total_regular_fare_min_bdt}
+            max={studentMode ? route.total_student_fare_max_bdt : route.total_regular_fare_max_bdt}
+            size="lg"
+          />
+          <Chip label={route.rank_label} size="small" variant="outlined" sx={{ ml: 1, height: 20, fontSize: '0.65rem' }} />
           {route.within_budget && (
             <Chip label={t('trip.withinBudget')} size="small" sx={{ ml: 1, backgroundColor: '#DCFCE7', color: '#16A34A', height: 20, fontSize: '0.65rem' }} />
           )}
         </Box>
         <Typography variant="body2" color="text.secondary" sx={{ fontFamily: 'var(--font-mono)' }}>
-          {t('trip.duration', { min: route.total_duration })}
+          {t('trip.duration', { min: route.total_duration_min })}
         </Typography>
         <Typography variant="body2" color="text.secondary">
           {route.transfers === 0 ? 'Direct' : t('trip.transfers', { n: route.transfers, count: route.transfers })}
         </Typography>
 
         <Box sx={{ ml: 'auto', display: 'flex', gap: 0.75, alignItems: 'center' }}>
-          {route.disrupted && <WarningIcon sx={{ fontSize: 16, color: 'warning.main' }} />}
-          <GroundingBadge ok={route.grounding_ok} />
+          {route.disruption_risk !== 'low' && <WarningIcon sx={{ fontSize: 16, color: 'warning.main' }} />}
+          <GroundingBadge ok={route.grounding?.valid ?? false} />
         </Box>
       </Box>
     </Paper>
@@ -70,9 +76,9 @@ const RouteResultsList: React.FC = () => {
       </Typography>
       {results.map((route) => (
         <RouteCard
-          key={route.id}
+          key={route.route_option_id}
           route={route}
-          selected={selectedRoute?.id === route.id}
+          selected={selectedRoute?.route_option_id === route.route_option_id}
           onClick={() => selectRoute(route)}
         />
       ))}

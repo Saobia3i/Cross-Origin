@@ -2,12 +2,13 @@ import React from 'react';
 import { Chip } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 
-type Status = 'verified' | 'pending' | 'downvoted' | 'resolved' | 'expired' | 'active' | 'closed';
+type Status = 'draft' | 'verified' | 'pending' | 'rejected' | 'resolved' | 'expired' | 'active' | 'closed';
 
 const STATUS_COLORS: Record<Status, { bg: string; color: string }> = {
   verified:  { bg: '#DCFCE7', color: '#16A34A' },
   pending:   { bg: '#FEF3C7', color: '#B45309' },
-  downvoted: { bg: '#F1F5F9', color: '#64748B' },
+  draft:     { bg: '#F1F5F9', color: '#64748B' },
+  rejected:  { bg: '#FFE4E6', color: '#E11D48' },
   resolved:  { bg: '#DBEAFE', color: '#1D4ED8' },
   expired:   { bg: '#F1F5F9', color: '#94A3B8' },
   active:    { bg: '#DCFCE7', color: '#16A34A' },

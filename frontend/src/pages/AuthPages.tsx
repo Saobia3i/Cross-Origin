@@ -24,9 +24,9 @@ type LoginForm    = z.infer<typeof loginSchema>;
 type RegisterForm = z.infer<typeof registerSchema>;
 
 // ── Dev bypass users — works WITHOUT backend ──────────────────────
-const DEV_USERS: Record<string, { name: string; role: 'admin' | 'superadmin' | 'user' }> = {
+const DEV_USERS: Record<string, { name: string; role: 'admin' | 'user' }> = {
   'admin@dev':     { name: 'Dev Admin',      role: 'admin' },
-  'super@dev':     { name: 'Dev Superadmin', role: 'superadmin' },
+  'super@dev':     { name: 'Dev Superadmin', role: 'admin' },  // backend roles are user|admin only
   'user@dev':      { name: 'Dev User',       role: 'user' },
 };
 const DEV_PASSWORD = 'devpass';
@@ -54,8 +54,8 @@ export const LoginPage: React.FC = () => {
 
     // ── Real backend login ───────────────────────────────────────
     try {
-      const res = await login(data.email, data.password) as any;
-      setAuth(res.user, res.token);
+      const res = await login(data.email, data.password);
+      setAuth(res.user, res.access_token);
       navigate('/');
     } catch (e) {
       setError((e as Error).message || 'Login failed. Backend may be offline.');
@@ -150,8 +150,8 @@ export const RegisterPage: React.FC = () => {
   const onSubmit = async (data: RegisterForm) => {
     setError('');
     try {
-      const res = await register(data.name, data.email, data.password, data.phone) as any;
-      setAuth(res.user, res.token);
+      const res = await register(data.name, data.email, data.password);
+      setAuth(res.user, res.access_token);
       navigate('/');
     } catch (e) {
       setError((e as Error).message || 'Registration failed. Backend may be offline.');

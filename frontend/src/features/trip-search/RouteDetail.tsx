@@ -35,7 +35,8 @@ const RouteDetail: React.FC = () => {
       {/* Leg timeline */}
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
         {selectedRoute.legs.map((leg, i) => {
-          const fare = studentMode && leg.student_fare != null ? leg.student_fare : leg.fare;
+          const fmin = studentMode ? leg.student_fare_min_bdt : leg.regular_fare_min_bdt;
+          const fmax = studentMode ? leg.student_fare_max_bdt : leg.regular_fare_max_bdt;
           return (
             <Box key={i}>
               <Box sx={{ display: 'flex', gap: 2, py: 1.5 }}>
@@ -50,24 +51,24 @@ const RouteDetail: React.FC = () => {
                 {/* Leg content */}
                 <Box sx={{ flex: 1, pb: 1 }}>
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
-                    <ModePill mode={leg.mode as any} />
-                    <Typography variant="body2" fontWeight={600}>{leg.from}</Typography>
+                    <ModePill mode={leg.mode} />
+                    <Typography variant="body2" fontWeight={600}>{leg.from_hub}</Typography>
                     <ArrowForwardIcon sx={{ fontSize: 14, color: 'text.disabled' }} />
-                    <Typography variant="body2" fontWeight={600}>{leg.to}</Typography>
+                    <Typography variant="body2" fontWeight={600}>{leg.to_hub}</Typography>
                   </Box>
                   <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
-                    <FareText amount={fare} size="sm" />
+                    <FareText min={fmin} max={fmax} size="sm" />
                     <Typography variant="caption" color="text.secondary" sx={{ fontFamily: 'var(--font-mono)' }}>
-                      {t('trip.duration', { min: leg.duration_min })}
+                      {t('trip.duration', { min: leg.travel_time_min })}
                     </Typography>
-                    {studentMode && leg.student_fare != null && (
+                    {studentMode && leg.student_discount_applies && (
                       <Chip label={t('fare.student')} size="small" sx={{ height: 18, fontSize: '0.6rem', backgroundColor: '#FEF3C7', color: '#B45309' }} />
                     )}
                   </Box>
-                  {leg.boarding && (
+                  {leg.boarding_instruction && (
                     <Box sx={{ mt: 0.75, p: 1, backgroundColor: 'background.default', borderRadius: 1, display: 'flex', gap: 0.5 }}>
                       <InfoIcon sx={{ fontSize: 14, color: 'info.main', mt: '1px', flexShrink: 0 }} />
-                      <Typography variant="caption" color="text.secondary">{leg.boarding}</Typography>
+                      <Typography variant="caption" color="text.secondary">{leg.boarding_instruction}</Typography>
                     </Box>
                   )}
                 </Box>
@@ -82,8 +83,15 @@ const RouteDetail: React.FC = () => {
       <Divider sx={{ my: 2 }} />
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <Typography fontWeight={600}>{t('fare.total')}</Typography>
-        <FareText amount={selectedRoute.total_fare} size="lg" sx={{ color: 'primary.main' }} />
+        <FareText
+          min={studentMode ? selectedRoute.total_student_fare_min_bdt : selectedRoute.total_regular_fare_min_bdt}
+          max={studentMode ? selectedRoute.total_student_fare_max_bdt : selectedRoute.total_regular_fare_max_bdt}
+          size="lg" sx={{ color: 'primary.main' }}
+        />
       </Box>
+      {selectedRoute.warnings.map((w, i) => (
+        <Typography key={i} variant="caption" color="text.secondary" sx={{ display: 'block', mt: 1 }}>{w}</Typography>
+      ))}
     </Paper>
   );
 };

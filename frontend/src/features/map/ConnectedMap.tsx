@@ -3,7 +3,7 @@ import { Box, Button, IconButton, Paper, Typography } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
-import { fetchAlerts, fetchNetwork } from '../../api/endpoints';
+import { fetchReports, fetchNetwork } from '../../api/endpoints';
 import { useTripStore } from '../../store/trip';
 import { useUIStore } from '../../store/ui';
 import MapView from './MapView';
@@ -34,7 +34,7 @@ export default function ConnectedMap({ locate = true }: { locate?: boolean }) {
   const [activeHub, setActiveHub] = useState<string | null>(null);
 
   const net = useQuery({ queryKey: ['network'], queryFn: fetchNetwork });
-  const al = useQuery({ queryKey: ['alerts'], queryFn: fetchAlerts, refetchInterval: 12_000 });
+  const al = useQuery({ queryKey: ['alerts'], queryFn: () => fetchReports({ limit: 100 }), refetchInterval: 12_000 });
 
   const hubs = useMemo(() => toMapHubs(net.data ?? REFERENCE_NETWORK), [net.data]);
   const edges = useMemo(() => toMapEdges(net.data ?? REFERENCE_NETWORK), [net.data]);

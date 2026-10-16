@@ -8,7 +8,6 @@ import { useTranslation } from 'react-i18next';
 import { useQuery } from '@tanstack/react-query';
 import { fetchNetwork } from '../api/endpoints';
 import { ModePill } from '../components/ModePill';
-import { FareText } from '../components/FareText';
 import { StatusBadge } from '../components/StatusBadge';
 import { ErrorBox } from '../components/Feedback';
 import type { Hub, RouteEdge } from '../api/schemas';
@@ -31,7 +30,7 @@ const HubsTab: React.FC<{ hubs: Hub[]; q: string }> = ({ hubs, q }) => {
             <TableCell><code style={{ fontSize: 12 }}>{h.hub_id}</code></TableCell>
             <TableCell sx={{ fontWeight: 500 }}>{h.name}{h.name_bn && <span style={{ marginLeft: 8, color: '#64748B', fontSize: 13 }}>{h.name_bn}</span>}</TableCell>
             <TableCell><Chip label={h.type} size="small" variant="outlined" /></TableCell>
-            <TableCell sx={{ fontFamily: 'var(--font-mono)', fontSize: 12 }}>{h.lat?.toFixed(4)}, {h.lng?.toFixed(4)}</TableCell>
+            <TableCell sx={{ fontFamily: 'var(--font-mono)', fontSize: 12 }}>{h.latitude != null && h.longitude != null ? `${h.latitude.toFixed(4)}, ${h.longitude.toFixed(4)}` : '—'}</TableCell>
           </TableRow>
         ))}
       </TableBody>
@@ -53,7 +52,7 @@ const RoutesTab: React.FC<{ routes: RouteEdge[]; q: string }> = ({ routes, q }) 
           <TableCell>Route ID</TableCell>
           <TableCell>Mode</TableCell>
           <TableCell>From → To</TableCell>
-          <TableCell>Base Fare</TableCell>
+          <TableCell>Distance</TableCell>
           <TableCell>Time</TableCell>
           <TableCell>Student</TableCell>
           <TableCell>Status</TableCell>
@@ -65,8 +64,8 @@ const RoutesTab: React.FC<{ routes: RouteEdge[]; q: string }> = ({ routes, q }) 
             <TableCell><code style={{ fontSize: 11 }}>{r.route_id}</code></TableCell>
             <TableCell><ModePill mode={r.mode} /></TableCell>
             <TableCell>{r.origin_hub} → {r.destination_hub}</TableCell>
-            <TableCell><FareText amount={r.base_fare_bdt} size="sm" /></TableCell>
-            <TableCell sx={{ fontFamily: 'var(--font-mono)', fontSize: 12 }}>{r.estimated_time_min}m</TableCell>
+            <TableCell sx={{ fontFamily: 'var(--font-mono)', fontSize: 12 }}>{r.road_distance_km != null ? `${r.road_distance_km} km` : '—'}</TableCell>
+            <TableCell sx={{ fontFamily: 'var(--font-mono)', fontSize: 12 }}>{r.time_normal_min ?? '—'}m</TableCell>
             <TableCell>{r.student_eligible ? '✅' : '—'}</TableCell>
             <TableCell><StatusBadge status={r.status} /></TableCell>
           </TableRow>
@@ -86,8 +85,8 @@ const NetworkPage: React.FC = () => {
     queryFn: fetchNetwork,
   });
 
-  const hubs   = (data as any)?.hubs   ?? [];
-  const routes = (data as any)?.routes ?? [];
+  const hubs   = data?.hubs   ?? [];
+  const routes = data?.routes ?? [];
 
   return (
     <Container maxWidth="xl" sx={{ py: 3 }}>

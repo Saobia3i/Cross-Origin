@@ -12,7 +12,7 @@ const isRec = (v: unknown): v is Rec => typeof v === 'object' && v !== null;
 const str = (v: unknown): string | undefined => (typeof v === 'string' && v ? v : undefined);
 const num = (v: unknown): number | undefined => (typeof v === 'number' && Number.isFinite(v) ? v : undefined);
 const MODES: TransitMode[] = ['bus', 'mrt', 'rickshaw', 'leguna', 'cng', 'walk'];
-const asMode = (v: unknown): TransitMode => (MODES.includes(v as TransitMode) ? (v as TransitMode) : 'bus');
+const asMode = (v: unknown): TransitMode => (v === 'local_bus' ? 'bus' : MODES.includes(v as TransitMode) ? (v as TransitMode) : 'bus');
 export const norm = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, '');
 
 /** Accept an array, or an envelope-unwrapped object like { alerts: [...] } / { routes: [...] }. */
@@ -64,7 +64,7 @@ export function toMapEdges(raw: unknown): MapEdge[] {
 export function toMapAlerts(raw: unknown): MapAlert[] {
   return unwrapList(raw, 'alerts').flatMap((r): MapAlert[] => {
     if (!isRec(r)) return [];
-    const id = str(r.alert_id) ?? str(r.id);
+    const id = str(r.report_id) ?? str(r.alert_id) ?? str(r.id);
     const hubId = str(r.affected_hub);
     if (!id || !hubId) return [];
     const impact = isRec(r.routing_impact) ? r.routing_impact : {};
@@ -72,7 +72,7 @@ export function toMapAlerts(raw: unknown): MapAlert[] {
       .filter((x): x is string => typeof x === 'string');
     const closes = r.edge_closed === true || impact.edge_closed === true;
     return [{
-      id, hubId, type: str(r.type) ?? 'other', severity: str(r.severity) ?? 'medium',
+      id, hubId, type: str(r.report_type) ?? str(r.type) ?? 'other', severity: str(r.severity) ?? 'moderate',
       status: str(r.status) ?? 'pending', description: str(r.description) ?? '',
       closedEdgeIds: closes ? edgeIds : [],
     }];

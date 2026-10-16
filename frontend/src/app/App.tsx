@@ -8,6 +8,7 @@ import i18n from './i18n';
 import { lightTheme, darkTheme } from './theme';
 import { useUIStore } from '../store/ui';
 import Layout from '../components/Layout';
+import { useEventPolling } from '../hooks/useEventPolling';
 
 // Pages
 import HomePage       from '../pages/HomePage';
@@ -34,6 +35,7 @@ const qc = new QueryClient({
 const AppInner: React.FC = () => {
   const { theme } = useUIStore();
   const muiTheme  = theme === 'dark' ? darkTheme : lightTheme;
+  useEventPolling();
 
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme);

@@ -8,34 +8,35 @@ import MyLocationIcon from '@mui/icons-material/MyLocation';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import { useTranslation } from 'react-i18next';
 import { useTripStore } from '../../store/trip';
-import { searchTrips } from '../../api/endpoints';
-
-const HUBS = [
-  'Motijheel', 'Banasree', 'Malibagh', 'Shahbagh', 'Farmgate',
-  'Science Lab', 'Dhanmondi', 'Mohammadpur', 'Mirpur 10', 'Agargaon',
-  'Mohakhali', 'Badda', 'Uttara', 'Jatrabari', 'Kazipara',
-];
+import { useQuery } from '@tanstack/react-query';
+import { searchTrips, fetchNetwork } from '../../api/endpoints';
 
 const TripSearchForm: React.FC = () => {
   const { t } = useTranslation();
   const { origin, destination, budget, studentMode, avoidHubs, sortBy,
           setSearch, setResults, setSortBy } = useTripStore();
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  // Hub names come from the backend network (no hardcoded Dhaka data).
+  const { data: network } = useQuery({ queryKey: ['network'], queryFn: fetchNetwork });
+  const HUBS = (network?.hubs ?? []).map((h) => h.name);
 
   const handleSearch = async () => {
     if (!origin || !destination) return;
     setLoading(true);
+    setError('');
     try {
-      const results = await searchTrips({
+      const data = await searchTrips({
         origin, destination,
-        budget: budget ?? undefined,
-        student_mode: studentMode,
+        budget_bdt: budget ?? undefined,
+        prefer_student_fare: studentMode,
         avoid_hubs: avoidHubs,
         optimize: sortBy,
       });
-      setResults(Array.isArray(results) ? results : []);
-    } catch {
+      setResults(data.routes ?? []);
+    } catch (e) {
       setResults([]);
+      setError((e as Error).message);
     } finally {
       setLoading(false);
     }
@@ -89,9 +90,9 @@ const TripSearchForm: React.FC = () => {
 
       {/* Sort chips */}
       <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
-        {(['cheapest', 'fastest', 'fewest'] as const).map((s) => (
+        {(['cheapest', 'fastest', 'fewest_transfers'] as const).map((s) => (
           <Chip
-            key={s} label={t(`trip.${s}`)} size="small"
+            key={s} label={t(`trip.${s === 'fewest_transfers' ? 'fewest' : s}`)} size="small"
             onClick={() => setSortBy(s)}
             variant={sortBy === s ? 'filled' : 'outlined'}
             color={sortBy === s ? 'primary' : 'default'}
@@ -99,6 +100,8 @@ const TripSearchForm: React.FC = () => {
           />
         ))}
       </Box>
+
+      {error && <Typography color="error.main" variant="caption">{error}</Typography>}
 
       <Button
         variant="contained" fullWidth onClick={handleSearch} disabled={loading || !origin || !destination}
